@@ -1,0 +1,154 @@
+# Errors
+error-without-args: "&cНеверное использование команды. Используйте '/ep help' для помощи."
+error-invalid-syntax: "&cНеверный синтаксис команды. Используйте '/ep help' для помощи."
+error-command-not-found: "&cКоманда не найдена. Используйте '/ep help' для помощи."
+error-only-for-players: "&cТолько игрок может использовать данную команду."
+error-no-permission: "&cНедостаточно прав."
+error-arg-is-not-int: "&cАргумент %arg% должен быть числом."
+
+# Creation
+create-failed-exist: "&cЛифт '%name%' уже существует."
+create-success: "&fЛифт &b%name% &fсоздан в мире &b%world%&f."
+
+# Deleting
+delete-failed-not-found: "&cЛифт '%name%' не найден."
+delete-success: "&fЛифт &b%name% &fудалён."
+
+# Call-buttons
+callbuttons-failed-not-found: "&cЛифт '%name%' не найден."
+callbuttons-add-already: "&cВы уже в режиме добавления кнопок вызова."
+callbuttons-add-message: "&fВы вошли в режим добавления кнопки вызова. Кликните по кнопке, чтобы добавить её. Для выхода используйте &b/ep exitsel&f."
+callbuttons-add-success: "&fДобавлена кнопка вызова на (%x%, %y%, %z%) для этажа &b#%floor% &fлифта &b%name%&f."
+callbuttons-add-failed: "&cЛифт '%name%' уже имеет кнопку вызова на (%x%, %y%, %z%)."
+callbuttons-remove-already: "&cВы уже в режиме удаления кнопок вызова."
+callbuttons-remove-message: "&fВы вошли в режим удаления кнопки вызова. Кликните по кнопке, чтобы удалить её. Для выхода используйте &b/ep exitsel&f."
+callbuttons-remove-success: "&fУдалена кнопка вызова на (%x%, %y%, %z%) для лифта &b%name%&f."
+callbuttons-remove-failed: "&cЛифт '%name%' не имеет кнопки вызова на (%x%, %y%, %z%)."
+callbuttons-list-failed-not-found: "&cКнопки вызова для лифта '%name%' не найдены."
+callbuttons-list-failed-page-empty: "&cНе удалось загрузить кнопки вызова для их показа на странице %page%."
+callbuttons-list-header: "&f##   &7Кнопки вызова (%page%)   &f##"
+callbuttons-list-body: "&f&l• &f(%x%, %y%, %z%) на этаж &b#%floor%"
+callbuttons-list-footer: "&f##         &7-=*=-         &f##"
+
+# Platform blocks
+platformblocks-failed-not-found: "&cЛифт '%name%' не найден."
+platformblocks-add-already: "&cВы уже в режиме добавления платформы."
+platformblocks-add-message: "&fВы вошли в режим добавления платформы. Кликните по блоку, чтобы сделать его частью платформы. Для выхода используйте &b/ep exitsel&f."
+platformblocks-add-success: "&fБлок на (%x%, %y%, %z%) теперь является частью платформы лифта &b%name%&f."
+platformblocks-add-failed: "&cВ платформу лифта '%name%' уже входит блок на (%x%, %y%, %z%)."
+platformblocks-remove-already: "&cВы уже в режиме удаления платформы."
+platformblocks-remove-message: "&fВы вошли в режим удаления платформы. Кликните по блоку, чтобы сделать его частью платформы. Для выхода используйте &b/ep exitsel&f."
+platformblocks-remove-success: "&fБлок на (%x%, %y%, %z%) больше не является частью платформы лифта &b%name%&f."
+platformblocks-remove-failed: "&cВ платформу лифта '%name%' не входит блок на (%x%, %y%, %z%)."
+platformblocks-list-failed-not-found: "&cЛифт '%name%' не имеет платформу."
+platformblocks-list-failed-page-empty: "&cНе удалось загрузить блоки платформы для их показа на странице %page%."
+platformblocks-list-header: "&f##   &7Блоки платформы (%page%)   &f##"
+platformblocks-list-body: "&f&l• &f(%x%, %y%, %z%) - %material%"
+platformblocks-list-footer: "&f##          &7-=*=-          &f##"
+
+# List
+list-failed-not-found: "&cЛифты не найдены."
+list-failed-page-empty: "&cНе удалось загрузить лифты для их показа на странице %page%."
+list-header: "&f##      &7Лифты (%page%)      &f##"
+list-body: "&f&l• &f%name% - э:[%cur_floor%/%max_floors%], м:%world%"
+list-footer: "&f##        &7-=*=-        &f##"
+
+# Exitsel
+exitsel-failed-not-selected: "&cРежим выделения контролов лифта не активен."
+exitsel-exit-success: "&fРежим выделения контролов отключён."
+
+# Setsign
+setsign-failed-not-found: "&cЛифт '%name%' не найден."
+setsign-already: "&cВы уже в режиме переназначения таблички. Кликните по табличке, чтобы привязать её к лифту."
+setsign-message: "&fКликните по табличке, чтобы привязать её к лифту."
+setsign-success: "&fТабличка на (%x%, %y%, %z%) привязана к лифту '%name%'."
+
+# Info
+info-failed-not-found: "&cЛифт '%name%' не найден."
+info-header: "&f##   &7Информация о лифте   &f##"
+info-footer: "&f##         &7-=**=-         &f##"
+info-list:
+- ' &fИмя: &b%name%'
+- ' &fМир: &b%world%'
+- ' &fТекущий этаж: &b%current_floor%'
+- ' &fКол-во этажей: &b%max_floors%'
+- ' &fКол-во кнопок вызова: &b%call-buttons%'
+- ' &fПлощадь платформы: &b%platform_blocks%'
+- ' &fЛокация таблички: &b%sign_location%'
+
+# Misc
+reload-success: "&fElevatorsPlus перезагружен."
+
+# Help
+help-command-not-found: "&cПомощь по вашей команде не найдена."
+help-header: '&f##          &7Помощь по Elevators+          &f##'
+help-footer: '&f##                 &7-=**=-                 &f##'
+help-main-list:
+- '&f&l• &b/ep help &f&l- &fПоказать эту страницу'
+- '&f&l• &b/ep help <команда> &f&l- &fПоказать помощь по команде'
+- '&f&l• &b/ep create <лифт> &f&l- &fСоздать новый лифт'
+- '&f&l• &b/ep delete <лифт> &f&l- &fУдалить лифт'
+- '&f&l• &b/ep info <лифт> &f&l- &fПоказать информацию о лифте'
+- '&f&l• &b/ep list &f&l- &fПоказать список лифтов'
+- '&f&l• &b/ep reload &f&l- &fПерезагрузить плагин'
+- '&f&l• &b/ep setsign <лифт> &f&l- &fУстановить табличку для лифта'
+- '&f&l• &b/ep setheight <лифт> <этаж> <высота> &f&l- &fУстановить высоту этажа'
+- '&f&l• &b/ep exitsel &f&l- &fВыйти из режима выделения контролов лифта'
+- '&f&l• &b/ep callbutton add <лифт> <этаж> &f&l- &fДобавить кнопку вызова'
+- '&f&l• &b/ep callbutton remove <лифт> &f&l- &fУбрать кнопку вызова'
+- '&f&l• &b/ep callbutton list <лифт> [стр.] &f&l- &fПоказать кнопки вызова'
+- '&f&l• &b/ep platform add <лифт> &f&l- &fДобавить блок для платформы'
+- '&f&l• &b/ep platform remove <лифт> &f&l- &fУбрать блок из платформы'
+- '&f&l• &b/ep platform list <лифт> [стр.] &f&l- &fПоказать блоки платформы'
+help-command-create:
+- '&7    | &b/ep create <лифт>'
+- '&7 -> | &fСоздаёт лифт с названием, указанным в'
+- '&7    | &fаргументе и добавляет его в базу данных.'
+help-command-delete:
+- '&7    | &b/ep delete <лифт>'
+- '&7 -> | &fУдаляет существующий лифт по названию из'
+- '&7    | &fаргумента и убирает запись в базе данных.'
+help-command-info:
+- '&7    | &b/ep info <лифт>'
+- '&7 -> | &fПоказывает доступную информацию о'
+- '&7    | &fданном лифте в игровом чате.'
+help-command-list:
+- '&7    | &b/ep list'
+- '&7 -> | &fПоказывает список зарегистрированных'
+- '&7    | &fлифтов с краткой информацией.'
+help-command-reload:
+- '&7    | &b/ep reload'
+- '&7 -> | &fПерезагружает конфигурацию и сообщения'
+- '&7    | &fплагина, не трогая базу данных.'
+help-command-setsign:
+- '&7    | &b/ep setsign <лифт>'
+- '&7 -> | &fКликните по табличке после ввода команды, чтобы'
+- '&7    | &fона показывала список этажей после клика по ней.'
+help-command-setheight:
+- '&7    | &b/ep setheight <лифт> <этаж> <высота>'
+- '&7 -> | &fУстанавливает высоту этажа; данное значение определяет'
+- '&7    | &fрасстояние между текущим этажом и этажом выше него.'
+help-command-exitsel:
+- '&7    | &b/ep exitsel'
+- '&7 -> | &fВыключает режим выделения контролов лифта,'
+- '&7    | &fто есть кнопок вызова, платформы и таблички.'
+help-command-callbutton:
+- '&7    | &b/ep callbutton add <лифт> <этаж>'
+- '&7 -> | &fКликните по кнопке после ввода команды, чтобы назначить её'
+- '&7    | &fкак кнопку вызова, которая будет вызывать лифт на данный этаж.'
+- '&7    | &b/ep callbutton remove <лифт>'
+- '&7 -> | &fКликните по кнопке после ввода команды, чтобы снять с неё'
+- '&7    | &fназначения кнопки вызова и сделать самой обычной кнопкой.'
+- '&7    | &b/ep callbutton list <лифт>'
+- '&7 -> | &fДанная команда покажет вам список всех кнопок'
+- '&7    | &fвызова данного лифта с привязанными к ним этажами.'
+help-command-platform:
+- '&7    | &b/ep platform add <лифт>'
+- '&7 -> | &fКликните по блоку после ввода команды, чтобы назначить его'
+- '&7    | &fкак часть двигающейся от этажа к этажу платформы лифта.'
+- '&7    | &b/ep platform remove <лифт>'
+- '&7 -> | &fКликните по блоку после ввода команды, чтобы снять'
+- '&7    | &fс него значение части платформы и сделать обычным блоком.'
+- '&7    | &b/ep platform list <лифт>'
+- '&7 -> | &fДанная команда покажет вам список блоков,'
+- '&7    | &fкоторые вместе составляют платформу лифта.'

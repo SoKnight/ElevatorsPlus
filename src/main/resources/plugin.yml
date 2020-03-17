@@ -1,0 +1,35 @@
+name: ${project.name}
+main: elevatorsplus.ElevatorsPlus
+author: SoKnight
+version: ${project.version}
+api-version: 1.15
+commands:
+  eplus:
+    aliases: [ep, elevatorsplus]
+    description: Main plugin command
+    usage: /eplus help
+permissions:
+  eplus.command.help:
+    default: op
+  eplus.command.create:
+    default: op
+  eplus.command.delete:
+    default: op
+  eplus.command.modify:
+    default: op
+  eplus.command.info:
+    default: op
+  eplus.command.list:
+    default: op
+  eplus.command.reload:
+    default: op
+  eplus.command.done:
+    default: op
+  eplus.command.selection:
+    default: op
+  eplus.command.controls:
+    default: op
+  eplus.command.controls.destroy:
+    default: op
+  eplus.use:
+    default: true
