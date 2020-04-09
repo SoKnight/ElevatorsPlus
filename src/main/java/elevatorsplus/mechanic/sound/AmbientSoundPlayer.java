@@ -64,7 +64,7 @@ public class AmbientSoundPlayer {
 			return null;
 		}
 		
-		Float pitch = (float) section.getDouble("pitch", 1F);
+		float pitch = (float) section.getDouble("pitch", 1F);
 		return new AmbientSound(sound, volume, pitch);
 	}
 	

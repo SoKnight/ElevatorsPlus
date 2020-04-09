@@ -51,8 +51,7 @@ public class ElevatorsPlus extends JavaPlugin {
 		
 		this.pluginLogger = new PluginLogger(this);
 		
-		this.mainConfig = new Config(this);
-		this.messages = new MessagesProvider(this, mainConfig).getMessages();
+		this.setConfigs();
 		
 		try {
 			Database database = new Database(mainConfig, pluginLogger);
@@ -91,6 +90,11 @@ public class ElevatorsPlus extends JavaPlugin {
 		Bukkit.getScheduler().runTaskTimer(this, movingTasksExecutor, 0, frequency);
 		
 		pluginLogger.info("Oh, it's alive :D");
+	}
+	
+	public void setConfigs() {
+		this.mainConfig = new Config(this);
+		this.messages = new MessagesProvider(this, mainConfig).getMessages();
 	}
 	
 	public void registerCommands() {

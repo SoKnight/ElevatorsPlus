@@ -119,7 +119,7 @@ sound-playing:
     sound: 'ENTITY_EXPERIENCE_ORB_PICKUP'
     # Volume of sound
     # It's float value (can be 80.45 and other)
-    volume: 80
+    volume: 1
     # Pitch of sound (default: 1)
     # It's also float value
     pitch: 1
@@ -128,13 +128,13 @@ sound-playing:
   started:
     enabled: true
     sound: 'ENTITY_MINECART_RIDING'
-    volume: 80
+    volume: 0.25
 
   # Playing sound when user edit elevator elements
   selection:
     enabled: true
     sound: 'BLOCK_TRIPWIRE_ATTACH'
-    volume: 40
+    volume: 0.3
 
 # Configuration of levels menu interface
 interface:

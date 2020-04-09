@@ -3,7 +3,6 @@ package elevatorsplus.command;
 import org.bukkit.command.CommandSender;
 
 import elevatorsplus.ElevatorsPlus;
-import elevatorsplus.configuration.Config;
 import ru.soknight.lib.command.ExtendedSubcommandExecutor;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.lib.validation.validator.PermissionValidator;
@@ -12,15 +11,12 @@ import ru.soknight.lib.validation.validator.Validator;
 public class CommandReload extends ExtendedSubcommandExecutor {
 
 	private final ElevatorsPlus plugin;
-	private final Config config;
 	private final Messages messages;
 	
-	public CommandReload(ElevatorsPlus plugin, Config config, Messages messages) {
+	public CommandReload(ElevatorsPlus plugin, Messages messages) {
 		super(messages);
 		
 		this.plugin = plugin;
-		
-		this.config = config;
 		this.messages = messages;
 		
 		String permmsg = messages.get("error.no-permissions");
@@ -34,9 +30,7 @@ public class CommandReload extends ExtendedSubcommandExecutor {
 	public void executeCommand(CommandSender sender, String[] args) {
 		if(!validateExecution(sender, args)) return;
 		
-		config.refresh();
-		messages.refresh();
-		
+		plugin.setConfigs();
 		plugin.registerCommands();
 		plugin.registerMovingOperators();
 		
