@@ -8,22 +8,22 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import elevatorsplus.objects.Elevator;
-import elevatorsplus.utils.StringUtils;
+import elevatorsplus.database.Elevator;
 import lombok.RequiredArgsConstructor;
+import ru.soknight.lib.configuration.Messages;
 
 @RequiredArgsConstructor
 public class MenuBuilder {
 
+	private final Messages messages;
 	private final MenuPattern pattern;
 	
 	public Inventory build(Elevator elevator) {
 		String name = elevator.getName();
-		int levels = elevator.getFloorsCount();
-		int current = elevator.getCurrentFloor();
+		int levels = elevator.getLevelsCount();
+		int current = elevator.getCurrentLevel();
 		
-		String title = StringUtils.format(pattern.getTitle(), "%name%", name, "%levels%", levels,
-				"%current%", current);
+		String title = messages.format(pattern.getTitle(), "%name%", name, "%levels%", levels, "%current%", current);
 		
 		int size = pattern.getSize();
 		if(pattern.isAutosize()) {
@@ -49,7 +49,7 @@ public class MenuBuilder {
 	}
 	
 	private Inventory fillPreCurrent(Inventory inventory, Elevator elevator) {
-		int current = elevator.getCurrentFloor();
+		int current = elevator.getCurrentLevel();
 		
 		if(current == 1) return inventory;
 		
@@ -64,8 +64,8 @@ public class MenuBuilder {
 	}
 	
 	private Inventory fillPostCurrent(Inventory inventory, Elevator elevator) {
-		int current = elevator.getCurrentFloor();
-		int levels = elevator.getFloorsCount();
+		int current = elevator.getCurrentLevel();
+		int levels = elevator.getLevelsCount();
 		
 		if(current == levels) return inventory;
 		
@@ -83,12 +83,12 @@ public class MenuBuilder {
 		ItemMeta meta = item.getItemMeta();
 		
 		String name = elevator.getName();
-		int levels = elevator.getFloorsCount();
-		int current = elevator.getCurrentFloor();
+		int levels = elevator.getLevelsCount();
+		int current = elevator.getCurrentLevel();
 		
 		if(meta.hasDisplayName()) {
 			String dn = meta.getDisplayName();
-			dn = StringUtils.format(dn, "%name%", name, "%level%", level, "%levels%", levels, "%current%", current);
+			dn = messages.format(dn, "%name%", name, "%level%", level, "%levels%", levels, "%current%", current);
 			meta.setDisplayName(dn);
 		}
 		
@@ -98,7 +98,7 @@ public class MenuBuilder {
 			
 			raw.forEach(s -> {
 				if(s.contains("%"))
-					s = StringUtils.format(s, "%name%", name, "%level%", level, "%levels%", levels, "%current%", current);
+					s = messages.format(s, "%name%", name, "%level%", level, "%levels%", levels, "%current%", current);
 				lore.add(s);
 			});
 			meta.setLore(lore);

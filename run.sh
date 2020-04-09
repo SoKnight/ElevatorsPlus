@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Setup vars
-server_path="$HOME/Documents/Servers/Server"
 plugin_name="ElevatorsPlus"
 shaded_jar="ElevatorsPlus.jar"
 
@@ -24,7 +23,7 @@ fi
 
 # Deploying
 echo "${cyan}Copying compiled jar into test server directory as $plugin_name.jar..."
-if cp target/$shaded_jar $server_path/plugins/$plugin_name.jar 
+if cp target/$shaded_jar $HOME/Development/Servers/Paper\ 1.15.2/plugins/$plugin_name.jar 
 then
 	echo "${green}Successfully copied, reload plugin ;)"
 else

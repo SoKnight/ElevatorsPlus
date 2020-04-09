@@ -9,15 +9,21 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 
-import elevatorsplus.files.Messages;
-import elevatorsplus.listeners.SessionManager;
-import elevatorsplus.objects.Elevator;
-import elevatorsplus.objects.sessions.ViewSession;
+import elevatorsplus.ElevatorsPlus;
+import elevatorsplus.database.Elevator;
+import elevatorsplus.listener.session.SessionManager;
+import elevatorsplus.listener.session.ViewSession;
+import elevatorsplus.mechanic.ElevatorMoveOperator;
+import elevatorsplus.mechanic.type.CallingSourceType;
+import elevatorsplus.mechanic.unit.CallingSource;
 import lombok.RequiredArgsConstructor;
+import ru.soknight.lib.configuration.Messages;
 
 @RequiredArgsConstructor
 public class MenuListener implements Listener {
 	
+	private final ElevatorsPlus plugin;
+	private final Messages messages;
 	private final SessionManager sessions;
 	
 	@EventHandler
@@ -39,20 +45,25 @@ public class MenuListener implements Listener {
 		p.closeInventory();
 		
 		int target = event.getSlot() + 1;
-		if(elevator.getFloorsCount() < target) {
-			p.sendMessage(Messages.getMessage("mech-changed"));
+		if(elevator.getLevelsCount() < target) {
+			messages.getAndSend(p, "moving.changed");
 			return;
 		}
 		
-		if(target == elevator.getCurrentFloor()) {
-			p.sendMessage(Messages.getMessage("mech-already-there"));
+		if(target == elevator.getCurrentLevel()) {
+			messages.getAndSend(p, "moving.already-there");
 			return;
 		}
 		
-		// TODO: checking for player is stay on platform
-		// TODO: calling moving provider and moving to selected level
+		if(!elevator.isConfigured()) {
+			messages.sendFormatted(p, "moving.is-unconfigured", "%elevator%", elevator.getName());
+			return;
+		}
 		
-		p.sendMessage(Messages.formatMessage("mech-started", "%floor%", target));
+		ElevatorMoveOperator moveOperator = plugin.getMoveOperator();
+		CallingSource source = new CallingSource(CallingSourceType.SELF, p, target);
+		
+		moveOperator.startMove(elevator, source);
 	}
 	
 	@EventHandler(priority = EventPriority.LOWEST)

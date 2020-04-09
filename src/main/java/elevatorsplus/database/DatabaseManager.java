@@ -11,25 +11,26 @@ import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 
-import elevatorsplus.objects.Elevator;
-import elevatorsplus.utils.Logger;
+import ru.soknight.lib.logging.PluginLogger;
 
 public class DatabaseManager {
 	
-	private ConnectionSource source;
-	private Dao<Elevator, String> dao;
+	private final PluginLogger logger;
+	private final ConnectionSource source;
+	private final Dao<Elevator, String> dao;
 	
-	public DatabaseManager(Database database) throws SQLException {
-		source = database.getConnection();
-		dao = DaoManager.createDao(source, Elevator.class);
+	public DatabaseManager(Database database, PluginLogger logger) throws SQLException {
+		this.logger = logger;
+		this.source = database.getConnection();
+		this.dao = DaoManager.createDao(source, Elevator.class);
 	}
 	
 	public void shutdown() {
 		try {
 			source.close();
-			Logger.info("Database connection closed.");
+			logger.info("Database connection closed.");
 		} catch (IOException e) {
-			Logger.error("Failed close database connection: " + e.getLocalizedMessage());
+			logger.error("Failed close database connection: " + e.getLocalizedMessage());
 		}
 	}
 	

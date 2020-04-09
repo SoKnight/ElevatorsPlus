@@ -2,7 +2,8 @@ name: ${project.name}
 main: elevatorsplus.ElevatorsPlus
 author: SoKnight
 version: ${project.version}
-api-version: 1.15
+depend: [SKLibrary]
+api-version: 1.13
 commands:
   eplus:
     aliases: [ep, elevatorsplus]
@@ -27,9 +28,9 @@ permissions:
     default: op
   eplus.command.selection:
     default: op
-  eplus.command.controls:
+  eplus.command.elements:
     default: op
-  eplus.command.controls.destroy:
+  eplus.elements.destroy:
     default: op
   eplus.use:
     default: true

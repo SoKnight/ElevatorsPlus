@@ -1,154 +1,287 @@
-# Errors
-error-without-args: "&cНеверное использование команды. Используйте '/ep help' для помощи."
-error-invalid-syntax: "&cНеверный синтаксис команды. Используйте '/ep help' для помощи."
-error-command-not-found: "&cКоманда не найдена. Используйте '/ep help' для помощи."
-error-only-for-players: "&cТолько игрок может использовать данную команду."
-error-no-permission: "&cНедостаточно прав."
-error-arg-is-not-int: "&cАргумент %arg% должен быть числом."
+# ------------------------------------------------------------------
+#
+# Файл сообщений Elevators+ для русской локализации
+# Сгенерирован на версии ${project.version}
+#
+# Автор и разработчик: SoKnight
+# Отдельное спасибо voidpointer (https://github.com/NyanGuyMF)
+#
+# Вики на Github: https://github.com/SoKnight/ElevatorsPlus/wiki
+# Страница на SpigotMC: https://www.spigotmc.org/resources/elevators.66123/
+#
+# ------------------------------------------------------------------
+#
+# Все сообщения могут быть цветными, используйте цветовые коды как '&' и последующий цветовой код.
+# Некоторые сообщения имеют подстановки; это слова, выделенные '%' с двух сторон: '%elevator%', '%name%' и другие.
+# Пожалуйста, не изменяйте эти подстановки, поскольку они заменяются на реальные данные, которые вы можете упустить.
+# Также не изменяйте структуру сообщений, это очень важно для внутреннего кода плагина.
+#
+# Если вы видите уведомление в чате о том, что какое-то сообщение не найдено, вам нужно перегенерировать этот файл;
+# просто удалите файл messages_ru.yml в папке этого плагина и перезагрузите плагин (не /eplus reload) или перезапустите сервер
+#
+#
+# Частые ошибки
+error:
+  no-args: "&cSpecify subcommand or use '/eplus help' for help."
+  wrong-syntax: "&cWrong syntax of command, you can use '/eplus help' for help."
+  command-not-found: "&cCommand not found, you can use '/eplus help' for help."
+  only-for-players: "&cOnly players can use this command."
+  no-permissions: "&cYou don't have permission for this command."
+  arg-is-not-int: "&cArgument '%arg%'' must be integer."
+  unknown-elevator: "&cElevator '%elevator%' not found."
 
-# Creation
-create-failed-exist: "&cЛифт '%name%' уже существует."
-create-success: "&fЛифт &b%name% &fсоздан в мире &b%world%&f."
+# Общие команды
+general:
+  create:
+    exist: "&cElevator '%elevator%' already exist."
+    console: "&fElevator &b%name% &fhas been created."
+    player: "&fElevator &b%name% &fhas been created in world &b%world%&f."
+  deleted: "&fElevator &b%elevator% &fhas been deleted."
+  reloaded: "&fElevators+ reloaded."
 
-# Deleting
-delete-failed-not-found: "&cЛифт '%name%' не найден."
-delete-success: "&fЛифт &b%name% &fудалён."
+# Изменение параметров лифта
+modify:
+  unknown-option: "&cUnknown option, available: defheight, lvlheight, lvlscount, name, sign, world"
+  defheight:
+    already: "&cDefault levels height already is %value%."
+    changed: "&fDefault levels height changed (&b%old%&f -> &b%new%&f) for elevator &b%elevator%&f."
+  lvlheight:
+    already: "&cHeight of level #%level% already is %value% or it is default height."
+    unknown: "&cUnknown level, specify value between 1 and %levels%."
+    wrong-syntax: "&cWrong syntax, specify level and height separated by a space."
+    changed: "&fHeight for level &b#%level% &fchanged (&b%old%&f -> &b%new%&f) for elevator &b%elevator%&f."
+  lvlscount:
+    already: "&cThis elevator already has %value% levels."
+    changed: "&fLevels count changed (&b%old%&f -> &b%new%&f) for elevator &b%elevator%&f."
+  name:
+    exist: "&cAlready exist other elevator with name '%name%'."
+    already: "&cElevator %elevator% already has this name."
+    changed: "&fElevator &b%old% &fhas been renamed to &b%new%&f."
+  sign:
+    already: "&cThis sign already linked with this elevator."
+    wrong-syntax: "&cWrong syntax, specify location as x, y and z separated by a space."
+    cannot-be: "&cThis block (%material%) cannot be sign as provided by plugin configuration."
+    changed: "&fSign relocated (&b%old%&f -> &b%new%&f) for elevator &b%elevator%&f."
+  world:
+    already: "&cWorld already is %value%."
+    unknown: "&cUnknown world, specify name of exist world."
+    current-denied: "&cUsing '#current' as world value is available only for players."
+    changed: "&fWorld changed (&b%old%&f -> &b%new%&f) for elevator &b%elevator%&f."
 
-# Call-buttons
-callbuttons-failed-not-found: "&cЛифт '%name%' не найден."
-callbuttons-add-already: "&cВы уже в режиме добавления кнопок вызова."
-callbuttons-add-message: "&fВы вошли в режим добавления кнопки вызова. Кликните по кнопке, чтобы добавить её. Для выхода используйте &b/ep exitsel&f."
-callbuttons-add-success: "&fДобавлена кнопка вызова на (%x%, %y%, %z%) для этажа &b#%floor% &fлифта &b%name%&f."
-callbuttons-add-failed: "&cЛифт '%name%' уже имеет кнопку вызова на (%x%, %y%, %z%)."
-callbuttons-remove-already: "&cВы уже в режиме удаления кнопок вызова."
-callbuttons-remove-message: "&fВы вошли в режим удаления кнопки вызова. Кликните по кнопке, чтобы удалить её. Для выхода используйте &b/ep exitsel&f."
-callbuttons-remove-success: "&fУдалена кнопка вызова на (%x%, %y%, %z%) для лифта &b%name%&f."
-callbuttons-remove-failed: "&cЛифт '%name%' не имеет кнопки вызова на (%x%, %y%, %z%)."
-callbuttons-list-failed-not-found: "&cКнопки вызова для лифта '%name%' не найдены."
-callbuttons-list-failed-page-empty: "&cНе удалось загрузить кнопки вызова для их показа на странице %page%."
-callbuttons-list-header: "&f##   &7Кнопки вызова (%page%)   &f##"
-callbuttons-list-body: "&f&l• &f(%x%, %y%, %z%) на этаж &b#%floor%"
-callbuttons-list-footer: "&f##         &7-=*=-         &f##"
+# Список лифтов
+list:
+  not-found: "&cElevators not found."
+  page-is-empty: "&cPage %page% is empty."
+  header: "   &7Elevators [%page%/%pages%]"
+  body: " &b%elevator% &fat level &b%current% &fof &b%levels%&f in world '&b%world%&f'"
+  footer: " "
 
-# Platform blocks
-platformblocks-failed-not-found: "&cЛифт '%name%' не найден."
-platformblocks-add-already: "&cВы уже в режиме добавления платформы."
-platformblocks-add-message: "&fВы вошли в режим добавления платформы. Кликните по блоку, чтобы сделать его частью платформы. Для выхода используйте &b/ep exitsel&f."
-platformblocks-add-success: "&fБлок на (%x%, %y%, %z%) теперь является частью платформы лифта &b%name%&f."
-platformblocks-add-failed: "&cВ платформу лифта '%name%' уже входит блок на (%x%, %y%, %z%)."
-platformblocks-remove-already: "&cВы уже в режиме удаления платформы."
-platformblocks-remove-message: "&fВы вошли в режим удаления платформы. Кликните по блоку, чтобы сделать его частью платформы. Для выхода используйте &b/ep exitsel&f."
-platformblocks-remove-success: "&fБлок на (%x%, %y%, %z%) больше не является частью платформы лифта &b%name%&f."
-platformblocks-remove-failed: "&cВ платформу лифта '%name%' не входит блок на (%x%, %y%, %z%)."
-platformblocks-list-failed-not-found: "&cЛифт '%name%' не имеет платформу."
-platformblocks-list-failed-page-empty: "&cНе удалось загрузить блоки платформы для их показа на странице %page%."
-platformblocks-list-header: "&f##   &7Блоки платформы (%page%)   &f##"
-platformblocks-list-body: "&f&l• &f(%x%, %y%, %z%) - %material%"
-platformblocks-list-footer: "&f##          &7-=*=-          &f##"
+# Информация о лифте
+info:
+  header: "   &7Information about elevator"
+  footer: " "
+  list:
+  - ' &fName: &b%name%'
+  - ' &fWorld: &b%world%'
+  - ' &fCurrent level: &b%current%'
+  - ' &fLevels count: &b%levels%'
+  - ' &fCallbuttons count: &b%callbuttons%'
+  - ' &fDoors count: &b%doors%'
+  - ' &fBlocks in platform: &b%platform%'
+  - ' &fSign at: &b%sign%'
 
-# List
-list-failed-not-found: "&cЛифты не найдены."
-list-failed-page-empty: "&cНе удалось загрузить лифты для их показа на странице %page%."
-list-header: "&f##      &7Лифты (%page%)      &f##"
-list-body: "&f&l• &f%name% - э:[%cur_floor%/%max_floors%], м:%world%"
-list-footer: "&f##        &7-=*=-        &f##"
+# Выделение элементов лифта
+selection:
+  start:
+    already: "&cYou already starts selection session for elevator %elevator%, use /eplus done to finish."
+    unknown-type: "&cUnknown elements, available: callbuttons, doors, platform"
+    success: "&fStarted new selection session for elevator &b%elevator%&f."
+  done:
+    no-session: "&cYou have not selection session yet, use /eplus start <elevator> to start."
+    success: "&fFinished selection session for elevator &b%elevator%&f."
+  # Подсказки для выделения; вы можете удалить секции сообщений ниже, чтобы отключить их отправку
+  tip:
+    callbuttons:
+    - '   &7Callbuttons selection tip'
+    - ' &fClick &bleft mouse button &fto unlink'
+    - ' &fClick &bright mouse button &fto link'
+    - ' '
+    platform:
+    - '   &7Platform selection tip'
+    - ' &fClick &bleft mouse button &fto remove'
+    - ' &fClick &bright mouse button &fto add'
+    - ' '
 
-# Exitsel
-exitsel-failed-not-selected: "&cРежим выделения контролов лифта не активен."
-exitsel-exit-success: "&fРежим выделения контролов отключён."
+# Список элементов лифта
+elements:
+  unknown-type: "&cUnknown elements, available: callbuttons, doors, lvlsheights, platform"
+  callbuttons:
+    not-found: "&cThis elevator has no linked callbuttons."
+    empty-page: "&cPage %page% is empty."
+    header: "   &7Linked callbuttons [%page%/%pages%]"
+    body: " &fButton at &b(%x% %y% %z%) &flinked with level &b#%level%"
+    footer: " "
+  doors:
+    not-found: "&cThis elevator has no linked doors."
+    empty-page: "&cPage %page% is empty."
+    header: "   &7Linked doors [%page%/%pages%]"
+    body: " &fDoor at &b(%x% %y% %z%) &flinked with level &b#%level%"
+    footer: " "
+  lvlsheights:
+    not-found: "&cThis elevator has no custom levels heights."
+    empty-page: "&cPage %page% is empty."
+    header: "   &7Custom level heights [%page%/%pages%]"
+    body: " &fLevel &b#%levels% &fhas height &b%height%"
+    footer: " "
+  platform:
+    not-found: "&cThis elevator has no platform."
+    empty-page: "&cPage %page% is empty."
+    header: "   &7Elevator platform [%page%/%pages%]"
+    body: " &fBlock at &b(%x% %y% %z%) &fis &b%material%"
+    footer: " "
 
-# Setsign
-setsign-failed-not-found: "&cЛифт '%name%' не найден."
-setsign-already: "&cВы уже в режиме переназначения таблички. Кликните по табличке, чтобы привязать её к лифту."
-setsign-message: "&fКликните по табличке, чтобы привязать её к лифту."
-setsign-success: "&fТабличка на (%x%, %y%, %z%) привязана к лифту '%name%'."
+# Прослушивание сессий выделения
+listener:
+  unknown-elevator: "&cSession has linked with unknown elevator (%elevator%) and been finished."
+  elevator-works: "&cSession has linked with already working elevator (%elevator%), wait while elevator finish his task."
+  different-worlds: "&cYou must be in world '%world%' as specified for world elevator option."
+  unknown-level: "&cSpecify level value from 1 to %levels%."
+  callbuttons:
+    cannot-be: "&cTarget block (%material%) cannot be callbutton as provided by plugin configuration."
+    link:
+      aborted: "&fCallbutton linking aborted."
+      tip: " \n &fSend target level (1-%levels%) in game chat to link this callbutton.\nOr type &bnone &fto abort.\n "
+      success: "&fButton at &b(%x% %y% %z%) &flinked with level &b#%level% &fof elevator &b%elevator%&f."
+    relink:
+      aborted: "&fCallbutton relinking aborted."
+      tip: " \n &fSend target level (1-%levels%) in game chat to relink this callbutton.\nOr type &bnone &fto abort.\n "
+      success: "&fButton at &b(%x% %y% %z%) &frelinked (&b#%from% &f-> &b#%to%&f) for elevator &b%elevator%&f."
+    unlink:
+      is-not: "&cButton at (%x% %y% %z%) currently is not linked with elevator %elevator%."
+      success: "&fButton at &b(%x% %y% %z%) &fnot longer linked with elevator &b%elevator%&f."
+  doors:
+    cannot-be: "&cTarget block (%material%) cannot be door as provided by plugin configuration."
+    link:
+      aborted: "&fDoor linking aborted."
+      tip: " \n &fSend target level (1-%levels%) in game chat to link this door.\nOr type &bnone &fto abort.\n "
+      success: "&fDoor at &b(%x% %y% %z%) &flinked with level &b#%level% &fof elevator &b%elevator%&f."
+    relink:
+      aborted: "&fDoor relinking aborted."
+      tip: " \n &fSend target level (1-%levels%) in game chat to relink this door.\nOr type &bnone &fto abort.\n "
+      success: "&fDoor at &b(%x% %y% %z%) &frelinked (&b#%from% &f-> &b#%to%&f) for elevator &b%elevator%&f."
+    unlink:
+      is-not: "&cDoor at (%x% %y% %z%) currently is not linked with elevator %elevator%."
+      success: "&fDoor at &b(%x% %y% %z%) &fnot longer linked with elevator &b%elevator%&f."
+  platform:
+    is-not: "&cTarget block not is a part of elevator platform."
+    already: "&cTarget block is a part of platform already."
+    added: "&fBlock at &b(%x% %y% %z%) &fnow is part of platform for elevator &b%elevator%&f."
+    removed: "&fBlock at &b(%x% %y% %z%) &fis not longer part of platform for &b%elevator%&f."
+  destroying:
+    no-permissions: "&cYou don't have permissions for destroying elevator structure."
+    callbutton: "&fYou destroy callbutton &b(%x% %y% %z%) of elevator &b%elevator%&f, it has been unlinked."
+    door: "&fYou destroy door &b(%x% %y% %z%) of elevator &b%elevator%&f, it has been unlinked."
+    platform: "&fYou destroy platform block &b(%x% %y% %z%) of elevator &b%elevator%&f, it has been removed."
+    sign: "&fYou destroy sign &b(%x% %y% %z%) of elevator &b%elevator%&f, sign location has been reset."
 
-# Info
-info-failed-not-found: "&cЛифт '%name%' не найден."
-info-header: "&f##   &7Информация о лифте   &f##"
-info-footer: "&f##         &7-=**=-         &f##"
-info-list:
-- ' &fИмя: &b%name%'
-- ' &fМир: &b%world%'
-- ' &fТекущий этаж: &b%current_floor%'
-- ' &fКол-во этажей: &b%max_floors%'
-- ' &fКол-во кнопок вызова: &b%call-buttons%'
-- ' &fПлощадь платформы: &b%platform_blocks%'
-- ' &fЛокация таблички: &b%sign_location%'
+# Взаимодействие с лифтом
+moving:
+  no-permissions: "&cYou don't have permissions to use elevators."
+  is-unconfigured: "&cMoving unavailable because this elevator (%elevator%) configured wrongly."
+  changed: "&cThis elevator has been changed, please, open levels menu again."
+  already-there: "&cElevator already there."
+  platform-is-empty: "&cElevator platform has no passengers."
+  move:
+    started: "&fElevator moves you to level &b#%level%&f. Please, wait."
+    finished: "&fYou has been moved to &b#%level% &flevel."
+  call:
+    started: "&fElevator moves to your level &b#%level%&f. Please, wait."
+    finished: "&fElevator is at your level &b#%level% &fand waiting for you."
 
-# Misc
-reload-success: "&fElevatorsPlus перезагружен."
-
-# Help
-help-command-not-found: "&cПомощь по вашей команде не найдена."
-help-header: '&f##          &7Помощь по Elevators+          &f##'
-help-footer: '&f##                 &7-=**=-                 &f##'
-help-main-list:
-- '&f&l• &b/ep help &f&l- &fПоказать эту страницу'
-- '&f&l• &b/ep help <команда> &f&l- &fПоказать помощь по команде'
-- '&f&l• &b/ep create <лифт> &f&l- &fСоздать новый лифт'
-- '&f&l• &b/ep delete <лифт> &f&l- &fУдалить лифт'
-- '&f&l• &b/ep info <лифт> &f&l- &fПоказать информацию о лифте'
-- '&f&l• &b/ep list &f&l- &fПоказать список лифтов'
-- '&f&l• &b/ep reload &f&l- &fПерезагрузить плагин'
-- '&f&l• &b/ep setsign <лифт> &f&l- &fУстановить табличку для лифта'
-- '&f&l• &b/ep setheight <лифт> <этаж> <высота> &f&l- &fУстановить высоту этажа'
-- '&f&l• &b/ep exitsel &f&l- &fВыйти из режима выделения контролов лифта'
-- '&f&l• &b/ep callbutton add <лифт> <этаж> &f&l- &fДобавить кнопку вызова'
-- '&f&l• &b/ep callbutton remove <лифт> &f&l- &fУбрать кнопку вызова'
-- '&f&l• &b/ep callbutton list <лифт> [стр.] &f&l- &fПоказать кнопки вызова'
-- '&f&l• &b/ep platform add <лифт> &f&l- &fДобавить блок для платформы'
-- '&f&l• &b/ep platform remove <лифт> &f&l- &fУбрать блок из платформы'
-- '&f&l• &b/ep platform list <лифт> [стр.] &f&l- &fПоказать блоки платформы'
-help-command-create:
-- '&7    | &b/ep create <лифт>'
-- '&7 -> | &fСоздаёт лифт с названием, указанным в'
-- '&7    | &fаргументе и добавляет его в базу данных.'
-help-command-delete:
-- '&7    | &b/ep delete <лифт>'
-- '&7 -> | &fУдаляет существующий лифт по названию из'
-- '&7    | &fаргумента и убирает запись в базе данных.'
-help-command-info:
-- '&7    | &b/ep info <лифт>'
-- '&7 -> | &fПоказывает доступную информацию о'
-- '&7    | &fданном лифте в игровом чате.'
-help-command-list:
-- '&7    | &b/ep list'
-- '&7 -> | &fПоказывает список зарегистрированных'
-- '&7    | &fлифтов с краткой информацией.'
-help-command-reload:
-- '&7    | &b/ep reload'
-- '&7 -> | &fПерезагружает конфигурацию и сообщения'
-- '&7    | &fплагина, не трогая базу данных.'
-help-command-setsign:
-- '&7    | &b/ep setsign <лифт>'
-- '&7 -> | &fКликните по табличке после ввода команды, чтобы'
-- '&7    | &fона показывала список этажей после клика по ней.'
-help-command-setheight:
-- '&7    | &b/ep setheight <лифт> <этаж> <высота>'
-- '&7 -> | &fУстанавливает высоту этажа; данное значение определяет'
-- '&7    | &fрасстояние между текущим этажом и этажом выше него.'
-help-command-exitsel:
-- '&7    | &b/ep exitsel'
-- '&7 -> | &fВыключает режим выделения контролов лифта,'
-- '&7    | &fто есть кнопок вызова, платформы и таблички.'
-help-command-callbutton:
-- '&7    | &b/ep callbutton add <лифт> <этаж>'
-- '&7 -> | &fКликните по кнопке после ввода команды, чтобы назначить её'
-- '&7    | &fкак кнопку вызова, которая будет вызывать лифт на данный этаж.'
-- '&7    | &b/ep callbutton remove <лифт>'
-- '&7 -> | &fКликните по кнопке после ввода команды, чтобы снять с неё'
-- '&7    | &fназначения кнопки вызова и сделать самой обычной кнопкой.'
-- '&7    | &b/ep callbutton list <лифт>'
-- '&7 -> | &fДанная команда покажет вам список всех кнопок'
-- '&7    | &fвызова данного лифта с привязанными к ним этажами.'
-help-command-platform:
-- '&7    | &b/ep platform add <лифт>'
-- '&7 -> | &fКликните по блоку после ввода команды, чтобы назначить его'
-- '&7    | &fкак часть двигающейся от этажа к этажу платформы лифта.'
-- '&7    | &b/ep platform remove <лифт>'
-- '&7 -> | &fКликните по блоку после ввода команды, чтобы снять'
-- '&7    | &fс него значение части платформы и сделать обычным блоком.'
-- '&7    | &b/ep platform list <лифт>'
-- '&7 -> | &fДанная команда покажет вам список блоков,'
-- '&7    | &fкоторые вместе составляют платформу лифта.'
+# Сообщения с помощью
+help:
+  command-not-found: "&cHelp for your command not found."
+  header: "   &7Help for Elevators+"
+  body: " &b/eplus %command% &f&l- &f%description%"
+  footer: " "
+  # Описания для команд
+  descriptions:
+    help: 'Display help page'
+    create: 'Create new elevator'
+    delete: 'Delete exist elevator'
+    modify: 'Modify exist elevator'
+    info: 'View info about elevator'
+    list: 'View list of all elevators'
+    reload: 'Reload configurations'
+    done: 'Done selection session'
+    selection: 'Start selection edit session'
+    elements: 'View list of elements'
+  # Подстановки для команд
+  # Будут использованы после самих команд, если это будет нужно
+  placeholders:
+    command: '(command)'
+    name: '<name>'
+    elevator: '<elevator>'
+    player: '<player>'
+    option: '<option>'
+    values: '<values...>'
+    page: '(page)'
+    elements: '<elements>'
+  # Детальная помощь по каждой из команд
+  detailed:
+    create:
+    - ' &b/eplus create <name>'
+    - ' &fCreate new elevator with specified name'
+    - " &fIf used by player, elevator will has player's world"
+    - " &fIf used by console, world will specified as 'none'"
+    delete:
+    - ' &b/eplus delete <elevator>'
+    - ' &fDelete exist elevator with specified'
+    - ' &fname and remove it from database'
+    modify:
+    - ' &b/eplus modify <elevator> <option> <values...>'
+    - ' &fChange value of option for specified elevator'
+    - ' &fList of available options and values data types:'
+    - '   &bdefheight &f&l - &fDefault levels height &7(int: height)'
+    - '   &blvlheight &f&l - &fCustom height for level &7(ints: level, height)'
+    - '   &blvlscount &f&l - &fCount of levels &7(int: count)'
+    - '   &bname &f&l - &fName of elevator &7(text: name)'
+    - '   &bsign &f&l - &fLocation of sign &7(ints: x, y, z)'
+    - '   &bworld &f&l - &fWorld of elevator &7(text: world)'
+    - ' &fAdditional information see on Github wiki or SpigotMC page'
+    info:
+    - ' &b/eplus info <elevator>'
+    - ' &fView detailed information about'
+    - ' &fspecified elevator in game chat'
+    list:
+    - ' &b/eplus list (page)'
+    - ' &fView list of all registered elevators'
+    - ' &fwith short information in game chat'
+    reload:
+    - ' &b/eplus reload'
+    - ' &fReload configuration and messages'
+    done:
+    - ' &b/eplus done'
+    - ' &fDone elements selection session, which'
+    - ' &fhas been started using &n/eplus selection'
+    selection:
+    - ' &b/eplus selection <elevator> <elements>'
+    - ' &fStart selection session for specified elements'
+    - ' &fIf you want finish selection, use &n/eplus done'
+    - '   &b/eplus selection <elevator> callbuttons'
+    - '   &fStart callbuttons selection session'
+    - ' &b/eplus selection <elevator> doors'
+    - ' &fStart doors selection session'
+    - '   &b/eplus selection <elevator> platform'
+    - '   &fStart platform selection session'
+    elements:
+    - ' &b/eplus elements <elevator> <elements> (page)'
+    - ' &fView list with specified elements of elevator'
+    - '   &b/eplus elements <elevator> callbuttons (page)'
+    - '   &fView callbuttons as locations and linked levels'
+    - ' &b/eplus elements <elevator> doors (page)'
+    - ' &fView doors as locations and linked levels'
+    - '   &b/eplus elements <elevator> platform (page)'
+    - '   &fView platform blocks as locations and materials'
+    - ' &b/eplus elements <elevator> lvlsheights (page)'
+    - ' &fView levels list with custom heights'

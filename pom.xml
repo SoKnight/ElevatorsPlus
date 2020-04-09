@@ -13,18 +13,22 @@
     
     <repositories>
         <repository>
-            <id>papermc</id>
-            <url>https://papermc.io/repo/repository/maven-public/</url>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>SKLibrary-mvn-repo</id>
+            <url>https://raw.github.com/SoKnight/SKLibrary/tree/mvn-repo/</url>
         </repository>
     </repositories> 
     
     <dependencies>
-        <!-- Paper API -->
+        <!-- Spigot API -->
         <dependency>
-            <groupId>com.destroystokyo.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>1.15.2-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
+           <groupId>org.spigotmc</groupId>
+           <artifactId>spigot-api</artifactId>
+           <version>1.13.2-R0.1-SNAPSHOT</version>
+           <scope>provided</scope>
         </dependency>
         <!-- Lombok -->
         <dependency>
@@ -33,16 +37,12 @@
             <version>1.18.10</version>
             <scope>provided</scope>
         </dependency>
-        <!-- ORMLite -->
+        <!-- SKLibrary -->
         <dependency>
-            <groupId>com.j256.ormlite</groupId>
-            <artifactId>ormlite-jdbc</artifactId>
-            <version>5.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.j256.ormlite</groupId>
-            <artifactId>ormlite-core</artifactId>
-            <version>5.1</version>
+            <groupId>ru.soknight</groupId>
+            <artifactId>sklibrary</artifactId>
+            <version>1.0.6</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     
@@ -69,18 +69,6 @@
                     <source>8</source>
                     <encoding>UTF-8</encoding>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

@@ -3,16 +3,13 @@ package elevatorsplus.database;
 import java.io.File;
 import java.sql.SQLException;
 
-import org.bukkit.configuration.file.FileConfiguration;
-
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
 import elevatorsplus.ElevatorsPlus;
-import elevatorsplus.files.Config;
-import elevatorsplus.objects.Elevator;
-import elevatorsplus.utils.Logger;
+import elevatorsplus.configuration.Config;
+import ru.soknight.lib.logging.PluginLogger;
 
 public class Database {
 
@@ -25,8 +22,7 @@ public class Database {
 	private boolean useSQLite;
 	private int port;
 	
-	public Database() throws Exception {
-		FileConfiguration config = Config.getConfig();
+	public Database(Config config, PluginLogger logger) throws Exception {
 		useSQLite = config.getBoolean("database.use-sqlite", true);
 		if(!useSQLite) {
 			host = config.getString("database.host", "localhost");
@@ -52,7 +48,7 @@ public class Database {
 		
 		source.close();
 		
-		Logger.info("Database type " + (useSQLite ? "SQLite" : "MySQL") + " connected.");
+		logger.info("Database type " + (useSQLite ? "SQLite" : "MySQL") + " connected.");
 	}
 	
 	public ConnectionSource getConnection() throws SQLException {
