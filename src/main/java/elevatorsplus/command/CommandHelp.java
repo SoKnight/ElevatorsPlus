@@ -14,12 +14,12 @@ import ru.soknight.lib.command.placeholder.SimplePlaceholder;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.lib.validation.validator.PermissionValidator;
 
-public class СommandHelp extends ExtendedSubcommandExecutor {
+public class CommandHelp extends ExtendedSubcommandExecutor {
 	
 	private final HelpMessage message;
 	private final Messages messages;
 	
-	public СommandHelp(Messages messages) {
+	public CommandHelp(Messages messages) {
 		super(messages);
 		
 		this.messages = messages;

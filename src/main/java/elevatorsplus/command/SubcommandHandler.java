@@ -11,7 +11,7 @@ public class SubcommandHandler extends AbstractSubcommandsHandler {
 		
 		super(messages);
 		
-		super.setExecutor("help", new СommandHelp(messages));
+		super.setExecutor("help", new CommandHelp(messages));
 		super.setExecutor("create", new CommandCreate(plugin, config, messages));
 		super.setExecutor("delete", new CommandDelete(plugin, messages));
 		super.setExecutor("modify", new CommandModify(plugin, config, messages));
