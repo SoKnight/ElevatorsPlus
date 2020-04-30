@@ -19,16 +19,18 @@ import elevatorsplus.database.TextLocation;
 import elevatorsplus.listener.session.SelectionSession;
 import elevatorsplus.listener.session.SessionManager;
 import elevatorsplus.mechanic.sound.AmbientSoundPlayer;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import ru.soknight.lib.configuration.Messages;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class SelectionSessionListener implements Listener {
 
 	private final Config config;
 	private final Messages messages;
-	private final SessionManager sm;
-	private final DatabaseManager dbm;
+	
+	private final SessionManager sessionManager;
+	private final DatabaseManager databaseManager;
+	
 	private final AmbientSoundPlayer soundPlayer;
 	
 	@EventHandler(priority = EventPriority.LOWEST)
@@ -36,19 +38,19 @@ public class SelectionSessionListener implements Listener {
 		Player p = event.getPlayer();
 		
 		String name = p.getName();
-		if(!sm.hasSelectionSession(name)) return;
+		if(!sessionManager.hasSelectionSession(name)) return;
 		
 		Action action = event.getAction();
 		if(!action.equals(Action.LEFT_CLICK_BLOCK) && !action.equals(Action.RIGHT_CLICK_BLOCK)) return;
 		EquipmentSlot hand = event.getHand();
 		if(!hand.equals(EquipmentSlot.HAND)) return;
 		
-		SelectionSession session = sm.getSelectionSession(name);
+		SelectionSession session = sessionManager.getSelectionSession(name);
 		String elevatorName = session.getElevator();
 		
-		Elevator elevator = dbm.getElevator(elevatorName);
+		Elevator elevator = databaseManager.getElevator(elevatorName);
 		if(elevator == null) {
-			sm.doneSelectionSession(name);
+			sessionManager.doneSelectionSession(name);
 			messages.sendFormatted(p, "listener.unknown-elevator", "%elevator%", elevatorName);
 			return;
 		}
@@ -84,7 +86,7 @@ public class SelectionSessionListener implements Listener {
 			if(action.equals(Action.LEFT_CLICK_BLOCK))
 				removePlatformBlock(p, b, elevator);
 			else addPlatformBlock(p, b, elevator);
-			dbm.updateElevator(elevator);
+			databaseManager.updateElevator(elevator);
 			break;
 		default:
 			break;
@@ -112,10 +114,10 @@ public class SelectionSessionListener implements Listener {
 		
 		if(elevator.isCallButton(strloc)) {
 			int current = elevator.getCallbuttonLevel(strloc);
-			sm.startLinkingSession(name, elevatorName, ElementType.CALLBUTTONS, textloc, current);
+			sessionManager.startLinkingSession(name, elevatorName, ElementType.CALLBUTTONS, textloc, current);
 			messages.sendFormatted(p, "listener.callbuttons.relink.tip", "%levels%", levels, "%level%", current);
 		} else {
-			sm.startLinkingSession(name, elevatorName, ElementType.CALLBUTTONS, textloc);
+			sessionManager.startLinkingSession(name, elevatorName, ElementType.CALLBUTTONS, textloc);
 			messages.sendFormatted(p, "listener.callbuttons.link.tip", "%levels%", levels);
 			soundPlayer.onSelect(p);
 		}
@@ -165,10 +167,10 @@ public class SelectionSessionListener implements Listener {
 		
 		if(elevator.isDoor(strloc)) {
 			int current = elevator.getDoorLevel(strloc);
-			sm.startLinkingSession(name, elevatorName, ElementType.DOORS, textloc, current);
+			sessionManager.startLinkingSession(name, elevatorName, ElementType.DOORS, textloc, current);
 			messages.sendFormatted(p, "listener.doors.relink.tip", "%levels%", levels, "%level%", current);
 		} else {
-			sm.startLinkingSession(name, elevatorName, ElementType.DOORS, textloc);
+			sessionManager.startLinkingSession(name, elevatorName, ElementType.DOORS, textloc);
 			messages.sendFormatted(p, "listener.doors.link.tip", "%levels%", levels);
 			soundPlayer.onSelect(p);
 		}

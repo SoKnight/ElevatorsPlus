@@ -15,6 +15,4 @@ public class CallingSource {
 	private final int target;
 	private int targetY;
 	
-	
-	
 }

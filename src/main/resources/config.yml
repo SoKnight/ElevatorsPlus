@@ -24,7 +24,7 @@
 #
 # Configuration of database
 database:
-  # Should plugin use SQLite Database as data storage?
+  # Should plugin use SQLite database as data storage?
   # Specify 'true' for SQLite or 'false' for MySQL
   use-sqlite: true
 
@@ -101,7 +101,7 @@ elements:
   # You can customize elevator sign content using color codes
   # Also you can use the next placeholders: 
   #   %name%            name of elevator
-  #   %current%   current level position
+  #   %current%         current level position
   #   %levels%          count of levels
   sign-content:
   - '&l[Elevators+]'

@@ -1,4 +1,4 @@
-package elevatorsplus.mechanic;
+package elevatorsplus.mechanic.tool;
 
 import java.util.Map;
 
@@ -15,9 +15,9 @@ import elevatorsplus.database.TextLocation;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class ElevatorDoorsOpener {
+public class ElevatorDoorsController {
 
-	private Config config;
+	private final Config config;
 	
 	public void openDoors(Elevator elevator, int level) {
 		World world = elevator.getBukkitWorld();

@@ -1,29 +1,58 @@
 package elevatorsplus.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import elevatorsplus.configuration.Config;
 import elevatorsplus.database.Elevator;
-import lombok.RequiredArgsConstructor;
 import ru.soknight.lib.configuration.Messages;
 
-@RequiredArgsConstructor
 public class MenuBuilder {
 
 	private final Messages messages;
 	private final MenuPattern pattern;
 	
-	public Inventory build(Elevator elevator) {
+	private final Map<String, Inventory> guis;
+	
+	public MenuBuilder(Config config, Messages messages) {
+		this.messages = messages;
+		this.pattern = config.getMenuPattern();
+		
+		this.guis = new HashMap<>();
+	}
+	
+	public Inventory getOrCreateGui(Elevator elevator) {
+		String name = elevator.getName();
+		
+		if(guis.containsKey(name))
+			return guis.get(name);
+		
+		Inventory gui = build(elevator);
+		guis.put(name, gui);
+		return gui;
+	}
+	
+	public void updateGui(Elevator elevator) {
+		Inventory gui = build(elevator);
+		guis.put(elevator.getName(), gui);
+	}
+	
+	private Inventory build(Elevator elevator) {
 		String name = elevator.getName();
 		int levels = elevator.getLevelsCount();
 		int current = elevator.getCurrentLevel();
 		
-		String title = messages.format(pattern.getTitle(), "%name%", name, "%levels%", levels, "%current%", current);
+		String title = messages.format(pattern.getTitle(),
+				"%name%", name,
+				"%levels%", levels,
+				"%current%", current);
 		
 		int size = pattern.getSize();
 		if(pattern.isAutosize()) {
@@ -38,7 +67,7 @@ public class MenuBuilder {
 		inventory = fillPreCurrent(inventory, elevator);
 		
 		// Adding current entry
-		ItemStack curitem = pattern.getCurrent();
+		ItemStack curitem = pattern.getCurrent().clone();
 		curitem = formatMeta(curitem, elevator, current);
 		inventory.setItem(current - 1, curitem);
 		
@@ -54,10 +83,10 @@ public class MenuBuilder {
 		if(current == 1) return inventory;
 		
 		ItemStack other = pattern.getOther();
-		for(int i = 0; i < current; i++) {
+		for(int i = 1; i < current; i++) {
 			ItemStack temp = other.clone();
-			temp = formatMeta(temp, elevator, i + 1);
-			inventory.setItem(i, temp);
+			temp = formatMeta(temp, elevator, i);
+			inventory.setItem(i - 1, temp);
 		}
 		
 		return inventory;
@@ -84,12 +113,13 @@ public class MenuBuilder {
 		
 		String name = elevator.getName();
 		int levels = elevator.getLevelsCount();
-		int current = elevator.getCurrentLevel();
 		
 		if(meta.hasDisplayName()) {
-			String dn = meta.getDisplayName();
-			dn = messages.format(dn, "%name%", name, "%level%", level, "%levels%", levels, "%current%", current);
-			meta.setDisplayName(dn);
+			String displayname = messages.format(meta.getDisplayName(),
+					"%name%", name,
+					"%level%", level,
+					"%levels%", levels);
+			meta.setDisplayName(displayname);
 		}
 		
 		if(meta.hasLore()) {
@@ -98,7 +128,10 @@ public class MenuBuilder {
 			
 			raw.forEach(s -> {
 				if(s.contains("%"))
-					s = messages.format(s, "%name%", name, "%level%", level, "%levels%", levels, "%current%", current);
+					s = messages.format(s,
+							"%name%", name,
+							"%level%", level,
+							"%levels%", levels);
 				lore.add(s);
 			});
 			meta.setLore(lore);

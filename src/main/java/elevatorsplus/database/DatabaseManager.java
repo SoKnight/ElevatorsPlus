@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
@@ -11,26 +12,28 @@ import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 
-import ru.soknight.lib.logging.PluginLogger;
+import elevatorsplus.ElevatorsPlus;
 
 public class DatabaseManager {
 	
-	private final PluginLogger logger;
+	private final Logger logger;
 	private final ConnectionSource source;
+	
 	private final Dao<Elevator, String> dao;
 	
-	public DatabaseManager(Database database, PluginLogger logger) throws SQLException {
-		this.logger = logger;
+	public DatabaseManager(ElevatorsPlus plugin, Database database) throws SQLException {
+		this.logger = plugin.getLogger();
 		this.source = database.getConnection();
+		
 		this.dao = DaoManager.createDao(source, Elevator.class);
 	}
 	
 	public void shutdown() {
 		try {
 			source.close();
-			logger.info("Database connection closed.");
+			logger.info("Disconnected from database.");
 		} catch (IOException e) {
-			logger.error("Failed close database connection: " + e.getLocalizedMessage());
+			logger.severe("Failed to close database connection: " + e.getLocalizedMessage());
 		}
 	}
 	

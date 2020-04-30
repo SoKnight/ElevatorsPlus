@@ -24,8 +24,8 @@ public class MenuPattern {
 	public MenuPattern(Config config) {
 		this.title = config.getColoredString("interface.title");
 		this.size = config.getInt("interface.size", 0) * 9;
-		if(size == 0) this.autosize = true;
-		else this.autosize = false;
+		
+		this.autosize = size == 0;
 		
 		String cmstr = config.getString("interface.current.material").toUpperCase();
 		Material currentMaterial = Material.valueOf(cmstr);

@@ -8,16 +8,16 @@ import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 
-import elevatorsplus.ElevatorsPlus;
 import elevatorsplus.command.validation.ElevatorExecutionData;
 import elevatorsplus.command.validation.ElevatorValidator;
 import elevatorsplus.configuration.Config;
 import elevatorsplus.database.DatabaseManager;
 import elevatorsplus.database.Elevator;
 import elevatorsplus.listener.ElementType;
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedSubcommandExecutor;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.lib.validation.BaseExecutionData;
+import ru.soknight.lib.tool.CollectionsTool;
 import ru.soknight.lib.validation.CommandExecutionData;
 import ru.soknight.lib.validation.validator.ArgsCountValidator;
 import ru.soknight.lib.validation.validator.PermissionValidator;
@@ -25,14 +25,14 @@ import ru.soknight.lib.validation.validator.Validator;
 
 public class CommandElements extends ExtendedSubcommandExecutor {
 
-	private final ElevatorsPlus plugin;
+	private final DatabaseManager databaseManager;
 	private final Config config;
 	private final Messages messages;
 	
-	public CommandElements(ElevatorsPlus plugin, Config config, Messages messages) {
+	public CommandElements(DatabaseManager databaseManager, Config config, Messages messages) {
 		super(messages);
 		
-		this.plugin = plugin;
+		this.databaseManager = databaseManager;
 		this.config = config;
 		this.messages = messages;
 		
@@ -41,35 +41,33 @@ public class CommandElements extends ExtendedSubcommandExecutor {
 		String elevmsg = messages.get("error.unknown-elevator");
 		
 		Validator permval = new PermissionValidator("eplus.command.elements", permmsg);
-		Validator argsval = new ArgsCountValidator(3, argsmsg);
-		Validator elevval = new ElevatorValidator(true, elevmsg);
+		Validator argsval = new ArgsCountValidator(2, argsmsg);
+		Validator elevval = new ElevatorValidator(databaseManager, elevmsg);
 		
 		super.addValidators(permval, argsval, elevval);
 	}
 
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
-		String name = args[1];
+	public void executeCommand(CommandSender sender, CommandArguments args) {
+		String name = args.get(0);
 		
-		DatabaseManager dbm = plugin.getDatabaseManager();
-		
-		CommandExecutionData data = new ElevatorExecutionData(sender, args, dbm, name);
+		CommandExecutionData data = new ElevatorExecutionData(sender, args, name);
 		if(!validateExecution(data)) return;
 		
-		ElementType element = ElementType.valueOf(args[2].toUpperCase());
+		ElementType element = ElementType.valueOf(args.get(1).toUpperCase());
 		if(element == null) {
 			messages.getAndSend(sender, "elements.unknown-type");
 			return;
 		}
 		
-		Elevator elevator = dbm.getElevator(name);
+		Elevator elevator = databaseManager.getElevator(name);
 		
 		int page = 1;
-		if(args.length > 3)
+		if(args.size() > 2)
 			try {
-				page = Integer.parseInt(args[3]);
+				page = Integer.parseInt(args.get(2));
 			} catch (NumberFormatException e) {
-				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args[3]);
+				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args.get(2));
 				return;
 			}
 		
@@ -90,7 +88,7 @@ public class CommandElements extends ExtendedSubcommandExecutor {
 				return;
 			}
 			
-			Map<String, Integer> onpage = CollectionsUtil.getSubMap(callbuttons, size, page);
+			Map<String, Integer> onpage = CollectionsTool.getSubMap(callbuttons, size, page);
 			if(onpage.isEmpty()) {
 				messages.sendFormatted(sender, "elements.callbuttons.empty-page", "%page%", page);
 				return;
@@ -114,7 +112,7 @@ public class CommandElements extends ExtendedSubcommandExecutor {
 				return;
 			}
 			
-			Map<String, Integer> onpage = CollectionsUtil.getSubMap(doors, size, page);
+			Map<String, Integer> onpage = CollectionsTool.getSubMap(doors, size, page);
 			if(onpage.isEmpty()) {
 				messages.sendFormatted(sender, "elements.doors.empty-page", "%page%", page);
 				return;
@@ -138,7 +136,7 @@ public class CommandElements extends ExtendedSubcommandExecutor {
 				return;
 			}
 			
-			Map<Integer, Integer> onpage = CollectionsUtil.getSubMap(lvlheights, size, page);
+			Map<Integer, Integer> onpage = CollectionsTool.getSubMap(lvlheights, size, page);
 			if(onpage.isEmpty()) {
 				messages.sendFormatted(sender, "elements.lvlsheights.empty-page", "%page%", page);
 				return;
@@ -159,7 +157,7 @@ public class CommandElements extends ExtendedSubcommandExecutor {
 				return;
 			}
 			
-			Map<String, Material> onpage = CollectionsUtil.getSubMap(platform, size, page);
+			Map<String, Material> onpage = CollectionsTool.getSubMap(platform, size, page);
 			if(onpage.isEmpty()) {
 				messages.sendFormatted(sender, "elements.platform.empty-page", "%page%", page);
 				return;
@@ -187,32 +185,29 @@ public class CommandElements extends ExtendedSubcommandExecutor {
 	}
 	
 	@Override
-	public List<String> executeTabCompletion(CommandSender sender, String[] args) {
-		if(args.length == 1 || args.length > 3) return null;
+	public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
+		if(args.size() > 2) return null;
 		
-		CommandExecutionData data = new BaseExecutionData(sender, args);
-		validateTabCompletion(data);
+		validateTabCompletion(sender, args);
 		
 		List<String> output = new ArrayList<>();
 		
-		String name = args[1];
+		String name = args.get(0);
 		
-		DatabaseManager dbm = plugin.getDatabaseManager();
-		
-		if(args.length == 2) {
-			List<String> elevators = dbm.getAllNames();
+		if(args.size() == 1) {
+			List<String> elevators = databaseManager.getAllNames();
 		
 			elevators.stream()
 				.filter(s -> s.toLowerCase().startsWith(name.toLowerCase()))
 				.forEach(e -> output.add(e));
 		} else {
-			Elevator elevator = dbm.getElevator(name);
+			Elevator elevator = databaseManager.getElevator(name);
 			if(elevator == null) return null;
 				
 			List<String> elements = ElementType.getSelectionValues();
 				
 			elements.stream()
-				.filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
+				.filter(s -> s.toLowerCase().startsWith(args.get(1).toLowerCase()))
 				.forEach(o -> output.add(o));
 		}
 		

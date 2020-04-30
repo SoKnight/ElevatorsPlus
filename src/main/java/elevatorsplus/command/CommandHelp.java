@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.bukkit.command.CommandSender;
 
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedSubcommandExecutor;
 import ru.soknight.lib.command.help.HelpMessage;
 import ru.soknight.lib.command.help.HelpMessageFactory;
@@ -57,26 +58,28 @@ public class CommandHelp extends ExtendedSubcommandExecutor {
 	}
 
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
+	public void executeCommand(CommandSender sender, CommandArguments args) {
 		if(!validateExecution(sender, args)) return;
 		
-		if(args.length == 1) {
+		if(args.isEmpty()) {
 			message.send(sender);
 			return;
 		}
 		
-		String path = "help.detailed." + args[1].toLowerCase();
+		String path = "help.detailed." + args.get(0).toLowerCase();
 		
-		if(messages.getFileConfig().contains(path))
+		if(messages.getFileConfig().contains(path)) {
+			messages.getAndSend(sender, "help.header");
 			messages.getColoredList(path).forEach(s -> messages.send(sender, s));
-		else messages.getAndSend(sender, "help.command-not-found");
+			messages.getAndSend(sender, "help.footer");
+		} else messages.getAndSend(sender, "help.command-not-found");
 	}
 
 	@Override
-	public List<String> executeTabCompletion(CommandSender sender, String[] args) {
-		if(args.length != 2 || !validateTabCompletion(sender, args)) return null;
+	public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
+		if(args.size() != 1 || !validateTabCompletion(sender, args)) return null;
 		
-		String arg = args[0].toLowerCase();
+		String arg = args.get(0).toLowerCase();
 		List<String> output = new ArrayList<>();
 		
 		messages.getFileConfig().getConfigurationSection("help.detailed").getKeys(false).stream()

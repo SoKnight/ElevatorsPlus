@@ -12,8 +12,8 @@ cyan=`tput setaf 6`
 reset=`tput sgr0`
 
 # Building
-echo "${cyan}Clean-up and bilding $plugin_name with Maven..."
-if mvn clean install
+echo "${cyan}Clean-up and building $plugin_name with Maven..."
+if mvn install
 then
 	echo "${green}Build success."
 else

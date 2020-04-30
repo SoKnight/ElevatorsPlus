@@ -5,27 +5,28 @@ import java.util.List;
 
 import org.bukkit.command.CommandSender;
 
-import elevatorsplus.ElevatorsPlus;
 import elevatorsplus.configuration.Config;
 import elevatorsplus.database.DatabaseManager;
 import elevatorsplus.database.Elevator;
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedSubcommandExecutor;
 import ru.soknight.lib.configuration.Messages;
+import ru.soknight.lib.tool.CollectionsTool;
 import ru.soknight.lib.validation.validator.PermissionValidator;
 import ru.soknight.lib.validation.validator.Validator;
 
 public class CommandList extends ExtendedSubcommandExecutor {
 
-	private final ElevatorsPlus plugin;
+	private final DatabaseManager databaseManager;
 	private final Config config;
 	private final Messages messages;
 	
 	private final String header, body, footer;
 	
-	public CommandList(ElevatorsPlus plugin, Config config, Messages messages) {
+	public CommandList(DatabaseManager databaseManager, Config config, Messages messages) {
 		super(messages);
 		
-		this.plugin = plugin;
+		this.databaseManager = databaseManager;
 		this.config = config;
 		this.messages = messages;
 		
@@ -41,28 +42,26 @@ public class CommandList extends ExtendedSubcommandExecutor {
 	}
 
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
+	public void executeCommand(CommandSender sender, CommandArguments args) {
 		if(!validateExecution(sender, args)) return;
 		
 		int page = 1;
-		if(args.length > 1)
+		if(!args.isEmpty())
 			try {
-				page = Integer.parseInt(args[1]);
+				page = Integer.parseInt(args.get(0));
 			} catch (NumberFormatException e) {
-				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args[1]);
+				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args.get(0));
 				return;
 			}
 		
-		DatabaseManager dbm = plugin.getDatabaseManager();
-		
-		List<Elevator> elevators = dbm.getAllElevators();
+		List<Elevator> elevators = databaseManager.getAllElevators();
 		if(elevators.isEmpty()) {
 			messages.getAndSend(sender, "list.not-found");
 			return;
 		}
 		
 		int size = config.getInt("messages.list-size");
-		List<Elevator> onpage = CollectionsUtil.getSubList(elevators, size, page);
+		List<Elevator> onpage = CollectionsTool.getSubList(elevators, size, page);
 		
 		if(onpage.isEmpty()) {
 			messages.sendFormatted(sender, "list.page-is-empty", "%page%", page);
@@ -96,14 +95,10 @@ public class CommandList extends ExtendedSubcommandExecutor {
 	}
 	
 	@Override
-	public List<String> executeTabCompletion(CommandSender sender, String[] args) {
-		if(args.length != 2) return null;
+	public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
+		if(args.size() != 1 || !validateTabCompletion(sender, args)) return null;
 		
-		if(validateTabCompletion(sender, args)) return null;
-		
-		DatabaseManager dbm = plugin.getDatabaseManager();
-		
-		List<String> elevators = dbm.getAllNames();
+		List<String> elevators = databaseManager.getAllNames();
 		if(elevators.isEmpty()) return null;
 		
 		List<String> output = new ArrayList<>();

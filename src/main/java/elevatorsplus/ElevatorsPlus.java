@@ -1,6 +1,7 @@
 package elevatorsplus;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -14,107 +15,144 @@ import elevatorsplus.listener.ElementsDestroyingListener;
 import elevatorsplus.listener.LinkingSessionListener;
 import elevatorsplus.listener.SelectionSessionListener;
 import elevatorsplus.listener.session.SessionManager;
-import elevatorsplus.mechanic.ElevatorDoorsOpener;
 import elevatorsplus.mechanic.ElevatorMoveOperator;
-import elevatorsplus.mechanic.ElevatorSignRefresher;
-import elevatorsplus.mechanic.MovingTasksExecutor;
 import elevatorsplus.mechanic.sound.AmbientSoundPlayer;
+import elevatorsplus.mechanic.tool.ElevatorSignRefresher;
 import elevatorsplus.ui.MenuBuilder;
 import elevatorsplus.ui.MenuListener;
-import lombok.Getter;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.lib.logging.PluginLogger;
 
-@Getter
 public class ElevatorsPlus extends JavaPlugin {
-
-	@Getter private static ElevatorsPlus instance;
 	
-	private AmbientSoundPlayer soundPlayer;
-	private ElevatorSignRefresher signRefresher;
-	private ElevatorDoorsOpener doorsOpener;
-	private ElevatorMoveOperator moveOperator;
-	private MovingTasksExecutor movingTasksExecutor;
+	protected AmbientSoundPlayer soundPlayer;
+	protected ElevatorSignRefresher signRefresher;
+	protected ElevatorMoveOperator moveOperator;
 	
-	private MenuBuilder menuBuilder;
+	protected MenuBuilder menuBuilder;
 	
-	private DatabaseManager databaseManager;
-	private SessionManager sessionManager;
+	protected DatabaseManager databaseManager;
+	protected SessionManager sessionManager;
 	
-	private PluginLogger pluginLogger;
-	private Config mainConfig;
-	private Messages messages;
+	protected Config mainConfig;
+	protected Messages messages;
+	protected MessagesProvider messagesProvider;
 	
 	@Override
 	public void onEnable() {
-		instance = this;
+		long start = System.currentTimeMillis();
 		
-		this.pluginLogger = new PluginLogger(this);
+		// Configs initialization
+		refreshConfigs();
 		
-		this.setConfigs();
-		
+		// Database initialization
 		try {
-			Database database = new Database(mainConfig, pluginLogger);
-			this.databaseManager = new DatabaseManager(database, pluginLogger);
+			Database database = new Database(this, mainConfig);
+			this.databaseManager = new DatabaseManager(this, database);
 		} catch (Exception e) {
+			getLogger().severe("Failed to initialize database: " + e.getLocalizedMessage());
 			e.printStackTrace();
+			Bukkit.getPluginManager().disablePlugin(this);
+			return;
 		}
 		
-		this.sessionManager = new SessionManager();
-		this.soundPlayer = new AmbientSoundPlayer(pluginLogger, mainConfig);
-		this.menuBuilder = new MenuBuilder(messages, mainConfig.getMenuPattern());
+		// Any providers initialize
+		initializeProviders();
 		
 		// Command executors registration
-		this.registerCommands();
+		registerCommand();
 		
-		// Moving operators and providers registration
-		this.registerMovingOperators();
+		// Moving task launching
+		launchMovingTask();
+		
+		// Listeners initialization
+		registerListeners();
+		
+		long time = System.currentTimeMillis() - start;
+		getLogger().info("Bootstrapped in " + time + " ms.");
+	}
+	
+	private void refreshConfigs() {
+		this.mainConfig = new Config(this);
+		
+		this.messagesProvider = new MessagesProvider(this, mainConfig);
+		this.messages = messagesProvider.getMessages();
+	}
+	
+	private void registerCommand() {
+		SubcommandHandler handler = new SubcommandHandler(
+				this,
+				databaseManager,
+				mainConfig,
+				sessionManager,
+				signRefresher,
+				messages);
+		
+		PluginCommand eplus = getCommand("eplus");
+		
+		eplus.setExecutor(handler);
+		eplus.setTabCompleter(handler);
+	}
+	
+	private void registerListeners() {
+		SelectionSessionListener selectionSessionListener = new SelectionSessionListener(
+				mainConfig,
+				messages,
+				sessionManager,
+				databaseManager,
+				soundPlayer);
+		
+		ElementsClickListener elementsClickListener = new ElementsClickListener(
+				mainConfig,
+				messages,
+				databaseManager,
+				sessionManager,
+				menuBuilder,
+				moveOperator);
 		
 		PluginManager manager = Bukkit.getPluginManager();
-		manager.registerEvents(new SelectionSessionListener(mainConfig, messages, sessionManager, databaseManager, soundPlayer), this);
+		
+		manager.registerEvents(selectionSessionListener, this);
+		manager.registerEvents(elementsClickListener, this);
+		
 		manager.registerEvents(new LinkingSessionListener(messages, sessionManager, databaseManager), this);
-		manager.registerEvents(new ElementsClickListener(this, mainConfig, messages, databaseManager, sessionManager), this);
-		manager.registerEvents(new MenuListener(this, messages, sessionManager), this);
+		manager.registerEvents(new MenuListener(messages, sessionManager, moveOperator), this);
 		
-		if(!mainConfig.getBoolean("allow-controls-destroy"))
+		if(!mainConfig.getBoolean("allow-elements-destroy"))
 			manager.registerEvents(new ElementsDestroyingListener(mainConfig, messages, databaseManager), this);
-		
-		/*
-		 *  Launching elevator platform move task
-		 */
-		
-		double speed = mainConfig.getDouble("moving-speed");
-		this.movingTasksExecutor = new MovingTasksExecutor(this, speed);
-		
-		int frequency = mainConfig.getInt("moving-task-frequency");
-		Bukkit.getScheduler().runTaskTimer(this, movingTasksExecutor, 0, frequency);
-		
-		pluginLogger.info("Oh, it's alive :D");
 	}
 	
-	public void setConfigs() {
-		this.mainConfig = new Config(this);
-		this.messages = new MessagesProvider(this, mainConfig).getMessages();
-	}
-	
-	public void registerCommands() {
-		SubcommandHandler handler = new SubcommandHandler(this, mainConfig, messages);
+	private void initializeProviders() {
+		this.sessionManager = new SessionManager();
+		this.soundPlayer = new AmbientSoundPlayer(this, mainConfig);
 		
-		getCommand("eplus").setExecutor(handler);
-		getCommand("eplus").setTabCompleter(handler);
-	}
-	
-	public void registerMovingOperators() {
-		this.soundPlayer = new AmbientSoundPlayer(pluginLogger, mainConfig);
 		this.signRefresher = new ElevatorSignRefresher(mainConfig, messages);
-		this.doorsOpener = new ElevatorDoorsOpener(mainConfig);
-		this.moveOperator = new ElevatorMoveOperator(this, messages, soundPlayer, signRefresher, doorsOpener);
+		this.menuBuilder = new MenuBuilder(mainConfig, messages);
+	}
+	
+	private void launchMovingTask() {
+		this.moveOperator = new ElevatorMoveOperator(
+				this,
+				mainConfig,
+				messages,
+				databaseManager,
+				menuBuilder,
+				soundPlayer,
+				signRefresher);
+	}
+	
+	public void refresh() {
+		mainConfig.refresh();
+		messagesProvider.update(mainConfig);
+		
+		moveOperator.update();
+		
+		registerCommand();
 	}
 	
 	@Override
 	public void onDisable() {
-		if(databaseManager != null) databaseManager.shutdown();
-		pluginLogger.info("I'll be back..");
+		if(databaseManager != null)
+			databaseManager.shutdown();
 	}
 	
 }

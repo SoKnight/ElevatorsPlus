@@ -9,31 +9,35 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 
-import elevatorsplus.ElevatorsPlus;
 import elevatorsplus.database.Elevator;
 import elevatorsplus.listener.session.SessionManager;
 import elevatorsplus.listener.session.ViewSession;
 import elevatorsplus.mechanic.ElevatorMoveOperator;
 import elevatorsplus.mechanic.type.CallingSourceType;
 import elevatorsplus.mechanic.unit.CallingSource;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import ru.soknight.lib.configuration.Messages;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class MenuListener implements Listener {
 	
-	private final ElevatorsPlus plugin;
-	private final Messages messages;
-	private final SessionManager sessions;
+	private Messages messages;
+	
+	private final SessionManager sessionManager;
+	private final ElevatorMoveOperator moveOperator;
+	
+	public void update(Messages messages) {
+		this.messages = messages;
+	}
 	
 	@EventHandler
 	public void onClick(InventoryClickEvent event) {
 		if(event.getCurrentItem() == null) return;
 		
 		HumanEntity p = event.getWhoClicked();
-		if(!sessions.hasViewSession(p)) return;
+		if(!sessionManager.hasViewSession(p)) return;
 		
-		ViewSession session = sessions.getViewSession(p);
+		ViewSession session = sessionManager.getViewSession(p);
 		Elevator elevator = session.getElevator();
 		
 		InventoryView view = session.getView();
@@ -60,7 +64,6 @@ public class MenuListener implements Listener {
 			return;
 		}
 		
-		ElevatorMoveOperator moveOperator = plugin.getMoveOperator();
 		CallingSource source = new CallingSource(CallingSourceType.SELF, p, target);
 		
 		moveOperator.startMove(elevator, source);
@@ -69,8 +72,8 @@ public class MenuListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onInventoryClose(InventoryCloseEvent event) {
 		HumanEntity p = event.getPlayer();
-		if(sessions.hasViewSession(p))
-			sessions.doneViewSession(p);
+		if(sessionManager.hasViewSession(p))
+			sessionManager.doneViewSession(p);
 	}
 	
 }

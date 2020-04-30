@@ -14,15 +14,16 @@ import elevatorsplus.configuration.Config;
 import elevatorsplus.database.DatabaseManager;
 import elevatorsplus.database.Elevator;
 import elevatorsplus.database.TextLocation;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import ru.soknight.lib.configuration.Messages;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class ElementsDestroyingListener implements Listener {
 	
 	private final Config config;
 	private final Messages messages;
-	private final DatabaseManager dbm;
+	
+	private final DatabaseManager databaseManager;
 	
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onDestroy(BlockBreakEvent event) {
@@ -33,7 +34,7 @@ public class ElementsDestroyingListener implements Listener {
 		Block b = event.getBlock();
 		
 		String world = b.getWorld().getName();
-		List<Elevator> elevators = dbm.getElevatorsInWorld(world);
+		List<Elevator> elevators = databaseManager.getElevatorsInWorld(world);
 		
 		// Checking elevators in current world
 		if(elevators == null || elevators.isEmpty()) return;
@@ -94,7 +95,7 @@ public class ElementsDestroyingListener implements Listener {
 			messages.sendFormatted(p, "listener.destroying.sign", "%elevator%", name, "%x%", x, "%y%", y, "%z%", z);
 		}
 		
-		dbm.updateElevator(target);
+		databaseManager.updateElevator(target);
 	}
 	
 }

@@ -6,11 +6,11 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
-import elevatorsplus.ElevatorsPlus;
 import elevatorsplus.command.validation.ElevatorExecutionData;
 import elevatorsplus.command.validation.ElevatorValidator;
 import elevatorsplus.database.DatabaseManager;
 import elevatorsplus.database.Elevator;
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedSubcommandExecutor;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.lib.validation.CommandExecutionData;
@@ -20,16 +20,16 @@ import ru.soknight.lib.validation.validator.Validator;
 
 public class CommandInfo extends ExtendedSubcommandExecutor {
 
+	private final DatabaseManager databaseManager;
 	private final Messages messages;
-	private final ElevatorsPlus plugin;
 	
 	private final String header, footer;
 	private final ConfigurationSection section;
 	
-	public CommandInfo(ElevatorsPlus plugin, Messages messages) {
+	public CommandInfo(DatabaseManager databaseManager, Messages messages) {
 		super(messages);
 		
-		this.plugin = plugin;
+		this.databaseManager = databaseManager;
 		this.messages = messages;
 		
 		this.header = messages.get("info.header");
@@ -41,22 +41,20 @@ public class CommandInfo extends ExtendedSubcommandExecutor {
 		String elevmsg = messages.get("error.unknown-elevator");
 		
 		Validator permval = new PermissionValidator("eplus.command.info", permmsg);
-		Validator argsval = new ArgsCountValidator(2, argsmsg);
-		Validator elevval = new ElevatorValidator(true, elevmsg);
+		Validator argsval = new ArgsCountValidator(1, argsmsg);
+		Validator elevval = new ElevatorValidator(databaseManager, elevmsg);
 		
 		super.addValidators(permval, argsval, elevval);
 	}
 
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
-		String name = args[1];
+	public void executeCommand(CommandSender sender, CommandArguments args) {
+		String name = args.get(0);
 		
-		DatabaseManager dbm = plugin.getDatabaseManager();
-		
-		CommandExecutionData data = new ElevatorExecutionData(sender, args, dbm, name);
+		CommandExecutionData data = new ElevatorExecutionData(sender, args, name);
 		if(!validateExecution(data)) return;
 		
-		Elevator elevator = dbm.getElevator(name);
+		Elevator elevator = databaseManager.getElevator(name);
 		
 		String world = elevator.getWorld();
 		int current = elevator.getCurrentLevel();
@@ -94,14 +92,12 @@ public class CommandInfo extends ExtendedSubcommandExecutor {
 	}
 	
 	@Override
-	public List<String> executeTabCompletion(CommandSender sender, String[] args) {
-		if(args.length != 2) return null;
+	public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
+		if(args.size() != 1) return null;
 		
-		String arg = args[1].toLowerCase();
+		String arg = args.get(0).toLowerCase();
 		
-		DatabaseManager dbm = plugin.getDatabaseManager();
-		
-		List<String> elevators = dbm.getAllNames();
+		List<String> elevators = databaseManager.getAllNames();
 		List<String> output = new ArrayList<>();
 		
 		elevators.stream()

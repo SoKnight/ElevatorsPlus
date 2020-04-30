@@ -23,27 +23,33 @@ import elevatorsplus.mechanic.unit.PlatformBlock;
 import lombok.Getter;
 import ru.soknight.lib.configuration.Messages;
 
+@Getter
 public class ElevatorLauncher {
 
-	private static final MetadataValue VALUE = new FixedMetadataValue(ElevatorsPlus.getInstance(), true);
-	private static final Vector STOP_VECTOR = new Vector(0, 0, 0);
+	private final MetadataValue value;
+	private final Vector stopVector;
 	
 	private final ElevatorsPlus plugin;
 	private final Messages messages;
 	
 	private final int destinationLevel;
-	@Getter private final HumanEntity caller;
-	private final Elevator elevator;
+	private final HumanEntity caller;
+	private Elevator elevator;
 	
-	@Getter private int length;
+	private int length;
 	private int currentY;
-	@Getter private int destinationY;
+	private int destinationY;
 	
-	@Getter private BlockData signData;
+	private BlockData signData;
 	
-	public ElevatorLauncher(Messages messages, Elevator elevator, CallingSource source, BlockData signData) {
+	public ElevatorLauncher(ElevatorsPlus plugin, Messages messages, Elevator elevator,
+			CallingSource source, BlockData signData) {
+		
+		this.plugin = plugin;
 		this.messages = messages;
-		this.plugin = ElevatorsPlus.getInstance();
+		
+		this.value = new FixedMetadataValue(plugin, true);
+		this.stopVector = new Vector(0, 0, 0);
 		
 		this.destinationLevel = source.getTarget();
 		this.caller = source.getCaller();
@@ -66,7 +72,7 @@ public class ElevatorLauncher {
 		
 		passengers.forEach(e -> {
 			e.setGravity(false);
-			e.setMetadata("eplus_passenger_" + name, VALUE);
+			e.setMetadata("eplus_passenger_" + name, value);
 			if(e instanceof Player)
 				messages.sendFormatted(caller, "moving.move.started", "%level%", destinationLevel);
 		});
@@ -77,7 +83,9 @@ public class ElevatorLauncher {
 		return;
 	}
 	
-	public void stop() {
+	public void stop(Elevator elevator) {
+		this.elevator = elevator;
+		
 		String name = elevator.getName();
 		World world = elevator.getBukkitWorld();
 		
@@ -106,7 +114,7 @@ public class ElevatorLauncher {
 			passengers.forEach(p -> {
 				if(p == null) return;
 			
-				p.setVelocity(STOP_VECTOR);
+				p.setVelocity(stopVector);
 			
 				Location location = p.getLocation();
 				location.setY(destinationY + 1);

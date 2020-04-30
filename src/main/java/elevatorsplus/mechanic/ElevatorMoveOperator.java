@@ -11,36 +11,89 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.plugin.PluginManager;
 
 import elevatorsplus.ElevatorsPlus;
+import elevatorsplus.configuration.Config;
+import elevatorsplus.database.DatabaseManager;
 import elevatorsplus.database.Elevator;
 import elevatorsplus.database.TextLocation;
+import elevatorsplus.event.ElevatorFinishedMovingEvent;
+import elevatorsplus.event.ElevatorStartedMovingEvent;
+import elevatorsplus.event.ElevatorStartingMovingEvent;
 import elevatorsplus.mechanic.sound.AmbientSoundPlayer;
+import elevatorsplus.mechanic.tool.ElevatorDoorsController;
+import elevatorsplus.mechanic.tool.ElevatorSignRefresher;
 import elevatorsplus.mechanic.type.CallingSourceType;
 import elevatorsplus.mechanic.type.Direction;
 import elevatorsplus.mechanic.unit.CallingSource;
 import elevatorsplus.mechanic.unit.PlatformBlock;
-import lombok.AllArgsConstructor;
+import elevatorsplus.ui.MenuBuilder;
 import lombok.Getter;
 import ru.soknight.lib.configuration.Messages;
 
-@AllArgsConstructor
 public class ElevatorMoveOperator {
 
 	@Getter private static Map<String, ElevatorLauncher> sessions = new ConcurrentHashMap<>();
 	
 	private final ElevatorsPlus plugin;
+	
+	private final Config config;
 	private final Messages messages;
 	
+	private final DatabaseManager databaseManager;
+	private final MovingTasksExecutor tasksExecutor;
+	private final MetadataValue value;
+	
 	private final AmbientSoundPlayer soundPlayer;
+	private final ElevatorDoorsController doorsController;
+	
+	private final MenuBuilder menuBuilder;
 	private final ElevatorSignRefresher signRefresher;
-	private final ElevatorDoorsOpener doorsOpener;
+	
+	private final PluginManager pluginManager;
+	
+	public ElevatorMoveOperator(
+			ElevatorsPlus plugin,
+			Config config,
+			Messages messages,
+			DatabaseManager databaseManager,
+			MenuBuilder menuBuilder,
+			AmbientSoundPlayer soundPlayer,
+			ElevatorSignRefresher signRefresher) {
+		
+		this.plugin = plugin;
+		this.config = config;
+		this.messages = messages;
+		
+		this.databaseManager = databaseManager;
+		this.value = new FixedMetadataValue(plugin, true);
+		
+		this.tasksExecutor = new MovingTasksExecutor(plugin, this);
+		tasksExecutor.setSpeed(config.getDouble("moving-speed"));
+		
+		int frequency = config.getInt("moving-task-frequency");
+		Bukkit.getScheduler().runTaskTimer(plugin, tasksExecutor, 0, frequency);
+		
+		this.menuBuilder = menuBuilder;
+		this.signRefresher = signRefresher;
+		
+		this.soundPlayer = new AmbientSoundPlayer(plugin, config);
+		this.doorsController = new ElevatorDoorsController(config);
+		
+		this.pluginManager = Bukkit.getServer().getPluginManager();
+	}
+	
+	public void update() {
+		tasksExecutor.setSpeed(config.getDouble("moving-speed"));
+	}
 	
 	public void startMove(Elevator elevator, CallingSource source) {
 		HumanEntity caller = source.getCaller();
@@ -60,14 +113,25 @@ public class ElevatorMoveOperator {
 			return;
 		}
 		
-		this.doorsOpener.closeDoors(elevator, elevator.getCurrentLevel());
+		// Calling cancellable elevator moving starting event
+		ElevatorStartingMovingEvent starting = new ElevatorStartingMovingEvent(elevator, source, passengers, data);
+		pluginManager.callEvent(starting);
+		
+		if(starting.isCancelled()) return;
+		
+		elevator = starting.getElevator();
+		source = starting.getSource();
+		passengers = starting.getPassengers();
+		data = starting.getSignData();
+		
+		this.doorsController.closeDoors(elevator, elevator.getCurrentLevel());
 		
 		List<PlatformBlock> platformBlocks = spawnFallingBlocks(elevator);
 		
 		elevator.setPassengers(passengers);
 		elevator.setPlatformBlocks(platformBlocks);
 		
-		ElevatorLauncher launcher = new ElevatorLauncher(messages, elevator, source, data);
+		ElevatorLauncher launcher = new ElevatorLauncher(plugin, messages, elevator, source, data);
 		sessions.put(elevator.getName(), launcher);
 		
 		launcher.launch();
@@ -78,9 +142,13 @@ public class ElevatorMoveOperator {
 		int target = source.getTarget();
 		Direction direction = target > elevator.getCurrentLevel() ? Direction.UP : Direction.DOWN;
 		
-		plugin.getMovingTasksExecutor().addElevator(elevator, targetY, direction);
+		tasksExecutor.addElevator(elevator, targetY, direction);
 		
 		this.soundPlayer.onStart(source.getCaller());
+		
+		// Calling elevator moving started event
+		ElevatorStartedMovingEvent started = new ElevatorStartedMovingEvent(elevator, launcher, direction);
+		pluginManager.callEvent(started);
 	}
 	
 	public void doneMove(Elevator elevator) {
@@ -88,7 +156,7 @@ public class ElevatorMoveOperator {
 		if(!sessions.containsKey(name)) return;
 		
 		ElevatorLauncher launcher = sessions.get(name);
-		launcher.stop();
+		launcher.stop(elevator);
 		
 		BlockData data = launcher.getSignData();
 		String signloc = elevator.getSignLocation();
@@ -101,12 +169,17 @@ public class ElevatorMoveOperator {
 		}
 		
 		this.soundPlayer.onFinish(launcher.getCaller());
-		this.doorsOpener.openDoors(elevator, elevator.getCurrentLevel());
+		this.doorsController.openDoors(elevator, elevator.getCurrentLevel());
 		
 		sessions.remove(name);
 		elevator.setWorking(false);
 		
-		plugin.getDatabaseManager().updateElevator(elevator);
+		databaseManager.updateElevator(elevator);
+		menuBuilder.updateGui(elevator);
+		
+		// Calling elevator moving finished event
+		ElevatorFinishedMovingEvent finished = new ElevatorFinishedMovingEvent(elevator, launcher);
+		pluginManager.callEvent(finished);
 	}
 	
 	private Set<Entity> getPassengers(World world, Set<String> platformBlocks) {
@@ -131,16 +204,21 @@ public class ElevatorMoveOperator {
 		String name = elevator.getName();
 		
 		List<PlatformBlock> fallingBlocks = new ArrayList<>();
-		MetadataValue value = new FixedMetadataValue(ElevatorsPlus.getInstance(), true);
 		
 		platform.forEach((l, m) -> {
 			TextLocation textLoc = new TextLocation(l);
 			Location location = textLoc.toLocation(world);
-			world.getBlockAt(location).setType(Material.AIR);
+			
+			Block b = world.getBlockAt(location);
+			BlockData data = b.getBlockData();
+			
+			if(data == null || data.getMaterial() != m) data = Bukkit.createBlockData(m);
+			
+			b.setType(Material.AIR);
 			
 			location.add(0.5, 0, 0.5);
 			
-			FallingBlock block = world.spawnFallingBlock(location, Bukkit.createBlockData(m));
+			FallingBlock block = world.spawnFallingBlock(location, data);
 			block.setGravity(false);
 			block.setInvulnerable(true);
 			block.setDropItem(false);

@@ -3,6 +3,7 @@ package elevatorsplus.command;
 import org.bukkit.command.CommandSender;
 
 import elevatorsplus.ElevatorsPlus;
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedSubcommandExecutor;
 import ru.soknight.lib.configuration.Messages;
 import ru.soknight.lib.validation.validator.PermissionValidator;
@@ -27,14 +28,16 @@ public class CommandReload extends ExtendedSubcommandExecutor {
 	}
 
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
+	public void executeCommand(CommandSender sender, CommandArguments args) {
 		if(!validateExecution(sender, args)) return;
 		
-		plugin.setConfigs();
-		plugin.registerCommands();
-		plugin.registerMovingOperators();
+		long start = System.currentTimeMillis();
 		
-		messages.getAndSend(sender, "general.reloaded");
+		plugin.refresh();
+		
+		long time = System.currentTimeMillis() - start;
+		
+		messages.sendFormatted(sender, "general.reloaded", "%time%", time);
 	}
 	
 }

@@ -7,24 +7,31 @@ import ru.soknight.lib.validation.ValidationResult;
 import ru.soknight.lib.validation.validator.Validator;
 
 @AllArgsConstructor
-public class ElevatorValidator extends Validator {
+public class ElevatorValidator implements Validator {
 
-	private final boolean existNeeded;
+	private final DatabaseManager databaseManager;
 	private final String message;
+	
+	private boolean existNeeded;
+	
+	public ElevatorValidator(DatabaseManager databaseManager, String message) {
+		this.databaseManager = databaseManager;
+		this.message = message;
+		this.existNeeded = true;
+	}
 	
 	@Override
 	public ValidationResult validate(CommandExecutionData data) {
 		if(!(data instanceof ElevatorExecutionData)) return new ValidationResult(false);
 		
 		ElevatorExecutionData elevdata = (ElevatorExecutionData) data;
-		String name = elevdata.getElevatorName();
+		String name = elevdata.getElevator();
 		
 		ValidationResult failed = new ValidationResult(false, message.replace("%elevator%", name));
-		DatabaseManager dbm = elevdata.getDatabaseManager();
 			
-		if(name == null || dbm == null) return failed;
+		if(name == null || databaseManager == null) return failed;
 		
-		boolean validated = dbm.getElevator(name) != null;
+		boolean validated = databaseManager.getElevator(name) != null;
 		if(!existNeeded) validated = !validated;
 		
 		if(validated) return new ValidationResult(true);

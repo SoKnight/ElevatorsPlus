@@ -18,26 +18,29 @@ import org.bukkit.util.Vector;
 
 import elevatorsplus.ElevatorsPlus;
 import elevatorsplus.database.Elevator;
+import elevatorsplus.mechanic.ElevatorMoveOperator;
 import elevatorsplus.mechanic.unit.PlatformBlock;
 
 public abstract class AbstractElevatorMoveTask {
 	
-	private static final MetadataValue VALUE;
-	public static final PotionEffect EFFECT;
-	
-	static {
-		VALUE = new FixedMetadataValue(ElevatorsPlus.getInstance(), true);
-		EFFECT = new PotionEffect(PotionEffectType.INVISIBILITY, 6000, 1, false, false);
-	}
+	private final MetadataValue value;
+	private final PotionEffect effect;
 	
 	private final ElevatorsPlus plugin;
+	private final ElevatorMoveOperator moveOperator;
 	
 	private final Elevator elevator;
 	private final Vector vector;
 	private final Slime slime;
 	
-	public AbstractElevatorMoveTask(ElevatorsPlus plugin, Elevator elevator, double speed) {
+	public AbstractElevatorMoveTask(ElevatorsPlus plugin, ElevatorMoveOperator moveOperator,
+			Elevator elevator, double speed) {
+		
 		this.plugin = plugin;
+		this.moveOperator = moveOperator;
+		
+		this.value = new FixedMetadataValue(plugin, true);
+		this.effect = new PotionEffect(PotionEffectType.INVISIBILITY, 6000, 1, false, false);
 
 		this.elevator = elevator;
 		this.vector = new Vector(0, speed, 0);
@@ -52,8 +55,8 @@ public abstract class AbstractElevatorMoveTask {
 		slime.setSize(1);
 		slime.setInvulnerable(true);
 		slime.setCollidable(false);
-		slime.addPotionEffect(EFFECT);
-		slime.setMetadata("eplus_conductor_" + elevator.getName(), VALUE);
+		slime.addPotionEffect(effect);
+		slime.setMetadata("eplus_conductor_" + elevator.getName(), value);
 		this.slime = slime;
 		
 		elevator.getPassengers().add(slime);
@@ -82,8 +85,7 @@ public abstract class AbstractElevatorMoveTask {
 		
 		if(isReached(current)) {
 			slime.remove();
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
-					ElevatorsPlus.getInstance().getMoveOperator().doneMove(elevator));
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> moveOperator.doneMove(elevator));
 			return true;
 		} else return false;
 	}

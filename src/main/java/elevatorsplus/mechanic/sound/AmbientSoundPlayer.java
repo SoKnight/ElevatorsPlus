@@ -1,20 +1,27 @@
 package elevatorsplus.mechanic.sound;
 
+import java.util.logging.Logger;
+
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.HumanEntity;
 
+import elevatorsplus.ElevatorsPlus;
 import elevatorsplus.configuration.Config;
-import ru.soknight.lib.logging.PluginLogger;
 
 public class AmbientSoundPlayer {
 
-	private final PluginLogger logger;
-	private final AmbientSound finished, started, selected;
+	private final Logger logger;
 	
-	public AmbientSoundPlayer(PluginLogger logger, Config config) {
-		this.logger = logger;
+	private AmbientSound finished, started, selected;
+	
+	public AmbientSoundPlayer(ElevatorsPlus plugin, Config config) {
+		this.logger = plugin.getLogger();
 		
+		update(config);
+	}
+	
+	public void update(Config config) {
 		ConfigurationSection section = config.getFileConfig().getConfigurationSection("sound-playing");
 		
 		this.finished = initialize(section.getConfigurationSection("finished"));
@@ -46,7 +53,7 @@ public class AmbientSoundPlayer {
 	private AmbientSound initialize(ConfigurationSection section) {
 		boolean enabled = section.getBoolean("enabled");
 		if((Boolean) enabled == null) {
-			logger.error("Failed to load ambient sound '" + section.getName() + "': Unspecified 'enabled' parameter.");
+			logger.severe("Failed to load ambient sound '" + section.getName() + "': Unspecified 'enabled' parameter.");
 			return null;
 		}
 		
@@ -54,13 +61,13 @@ public class AmbientSoundPlayer {
 		
 		Sound sound = Sound.valueOf(section.getString("sound", "").toUpperCase());
 		if(sound == null) {
-			logger.error("Failed to load ambient sound '" + section.getName() + "': Unknown sound type.");
+			logger.severe("Failed to load ambient sound '" + section.getName() + "': Unknown sound type.");
 			return null;
 		}
 		
 		float volume = (float) section.getDouble("volume");
 		if((Float) volume == null) {
-			logger.error("Failed to load ambient sound '" + section.getName() + "': Unspecified 'volume' parameter.");
+			logger.severe("Failed to load ambient sound '" + section.getName() + "': Unspecified 'volume' parameter.");
 			return null;
 		}
 		

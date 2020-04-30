@@ -11,26 +11,27 @@ import elevatorsplus.database.Elevator;
 import elevatorsplus.database.TextLocation;
 import elevatorsplus.listener.session.LinkingSession;
 import elevatorsplus.listener.session.SessionManager;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import ru.soknight.lib.configuration.Messages;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class LinkingSessionListener implements Listener {
 
 	private final Messages messages;
-	private final SessionManager sessions;
-	private final DatabaseManager dbm;
+	
+	private final SessionManager sessionManager;
+	private final DatabaseManager databaseManager;
 	
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onChat(AsyncPlayerChatEvent event) {
 		Player p = event.getPlayer();
 		
 		String name = p.getName();
-		if(!sessions.hasLinkingSession(name)) return;
+		if(!sessionManager.hasLinkingSession(name)) return;
 		
 		event.setCancelled(true);
 		
-		LinkingSession session = sessions.getLinkingSession(name);
+		LinkingSession session = sessionManager.getLinkingSession(name);
 		boolean relinking = session.isRelinking();
 		
 		ElementType type = session.getType();
@@ -40,16 +41,16 @@ public class LinkingSessionListener implements Listener {
 		
 		String message = event.getMessage();
 		if(message.toLowerCase().equals("cancel")) {
-			sessions.doneLinkingSession(name);
+			sessionManager.doneLinkingSession(name);
 			messages.getAndSend(p, relinking ? section + ".relink.aborted" : section + ".link.aborted");
 			return;
 		}
 		
 		String elevatorName = session.getElevator();
-		Elevator elevator = dbm.getElevator(elevatorName);
+		Elevator elevator = databaseManager.getElevator(elevatorName);
 		
 		if(elevator == null) {
-			sessions.doneLinkingSession(name);
+			sessionManager.doneLinkingSession(name);
 			messages.sendFormatted(p, "listener.unknown-elevator", "%elevator%", elevatorName);
 			return;
 		}
@@ -78,23 +79,25 @@ public class LinkingSessionListener implements Listener {
 		int y = textloc.getY();
 		int z = textloc.getZ();
 		
-		sessions.doneLinkingSession(name);
-		
-		if(type == ElementType.CALLBUTTONS)
-			elevator.linkCallButton(strloc, level);
-		else elevator.linkDoor(strloc, level);
+		sessionManager.doneLinkingSession(name);
 		
 		section += relinking ? ".relink.success" : ".link.success";
 		String msg = messages.getFormatted(section, "%elevator%", elevatorName, "%x%", x, "%y%", y, "%z%", z);
 		
 		if(relinking) {
-			int current = elevator.getCallbuttonLevel(strloc);
+			int current = type == ElementType.CALLBUTTONS
+					? elevator.getCallbuttonLevel(strloc)
+					: elevator.getDoorLevel(strloc);
 			if((Integer) current == null) current = 0;
 			
 			msg = messages.format(msg, "%from%", current, "%to%", level);
 		} else msg = messages.format(msg, "%level%", level);
 		
-		dbm.updateElevator(elevator);
+		if(type == ElementType.CALLBUTTONS)
+			elevator.linkCallButton(strloc, level);
+		else elevator.linkDoor(strloc, level);
+		
+		databaseManager.updateElevator(elevator);
 		messages.send(p, msg);
 	}
 	

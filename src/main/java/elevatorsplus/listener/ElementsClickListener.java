@@ -20,7 +20,6 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 
-import elevatorsplus.ElevatorsPlus;
 import elevatorsplus.configuration.Config;
 import elevatorsplus.database.DatabaseManager;
 import elevatorsplus.database.Elevator;
@@ -36,12 +35,15 @@ import ru.soknight.lib.configuration.Messages;
 
 @AllArgsConstructor
 public class ElementsClickListener implements Listener {
-
-	private final ElevatorsPlus plugin;
+	
 	private final Config config;
 	private final Messages messages;
-	private final DatabaseManager dbm;
-	private final SessionManager sm;
+	
+	private final DatabaseManager databaseManager;
+	private final SessionManager sessionManager;
+	
+	private final MenuBuilder menuBuilder;
+	private final ElevatorMoveOperator moveOperator;
 	
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onClick(PlayerInteractEvent event) {
@@ -59,8 +61,10 @@ public class ElementsClickListener implements Listener {
 		if(config.getSigns().contains(type)) {
 			handleSignClick(p, b);
 			event.setCancelled(true);
-		} else if(config.getCallbuttons().contains(type))
+		} else if(config.getCallbuttons().contains(type)) {
 			handleCallbuttonClick(p, b);
+			event.setCancelled(true);
+		}
 	}
 	
 	@EventHandler(priority = EventPriority.LOWEST)
@@ -71,7 +75,7 @@ public class ElementsClickListener implements Listener {
 		TextLocation textloc = new TextLocation(location);
 		String l = textloc.getAsString();
 		
-		List<Elevator> elevators = dbm.getElevatorsInWorld(b.getWorld().getName());
+		List<Elevator> elevators = databaseManager.getElevatorsInWorld(b.getWorld().getName());
 		if(elevators == null || elevators.isEmpty()) return;
 		
 		for(Elevator e : elevators) {
@@ -99,7 +103,7 @@ public class ElementsClickListener implements Listener {
 		Location location = b.getLocation();
 		TextLocation textloc = new TextLocation(location);
 		
-		Elevator elevator = dbm.getElevatorBySign(textloc.getAsString());
+		Elevator elevator = databaseManager.getElevatorBySign(textloc.getAsString());
 		if(elevator == null || elevator.isWorking()) return;
 		
 		if(!p.hasPermission("eplus.use")) {
@@ -113,15 +117,10 @@ public class ElementsClickListener implements Listener {
 			return;
 		}
 		
-		Inventory inventory = elevator.getGui();
-		if(inventory == null) {
-			MenuBuilder builder = ElevatorsPlus.getInstance().getMenuBuilder();
-			inventory = builder.build(elevator);
-			elevator.setGui(inventory);
-		}
+		Inventory inventory = menuBuilder.getOrCreateGui(elevator);
 		
 		InventoryView view = p.openInventory(inventory);
-		sm.startViewSession(p, new ViewSession(view, elevator));
+		sessionManager.startViewSession(p, new ViewSession(view, elevator));
 	}
 	
 	private void handleCallbuttonClick(Player p, Block b) {
@@ -129,7 +128,7 @@ public class ElementsClickListener implements Listener {
 		TextLocation textloc = new TextLocation(location);
 		String l = textloc.getAsString();
 		
-		List<Elevator> elevators = dbm.getElevatorsInWorld(p.getWorld().getName());
+		List<Elevator> elevators = databaseManager.getElevatorsInWorld(p.getWorld().getName());
 		if(elevators == null || elevators.isEmpty()) return;
 		
 		Elevator elevator = null;
@@ -170,7 +169,6 @@ public class ElementsClickListener implements Listener {
 			return;
 		}
 		
-		ElevatorMoveOperator moveOperator = plugin.getMoveOperator();
 		CallingSource source = new CallingSource(CallingSourceType.CALL, p, target);
 		
 		moveOperator.startMove(elevator, source);

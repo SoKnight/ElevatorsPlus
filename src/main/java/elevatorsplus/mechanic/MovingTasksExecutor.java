@@ -10,24 +10,29 @@ import elevatorsplus.mechanic.task.AbstractElevatorMoveTask;
 import elevatorsplus.mechanic.task.ElevatorMoveDownTask;
 import elevatorsplus.mechanic.task.ElevatorMoveUpTask;
 import elevatorsplus.mechanic.type.Direction;
+import lombok.Setter;
 
+@Setter
 public class MovingTasksExecutor implements Runnable {
 
-	private Set<AbstractElevatorMoveTask> tasks;
-	
 	private final ElevatorsPlus plugin;
-	private final double speed;
+	private final Set<AbstractElevatorMoveTask> tasks;
+	private final ElevatorMoveOperator moveOperator;
 	
-	public MovingTasksExecutor(ElevatorsPlus plugin, double speed) {
-		this.tasks = Collections.synchronizedSet(new CopyOnWriteArraySet<AbstractElevatorMoveTask>());
+	private double speed;
+	
+	public MovingTasksExecutor(ElevatorsPlus plugin, ElevatorMoveOperator moveOperator) {
 		this.plugin = plugin;
-		this.speed = speed;
+		this.moveOperator = moveOperator;
+		
+		this.tasks = Collections.synchronizedSet(new CopyOnWriteArraySet<AbstractElevatorMoveTask>());
 	}
 	
 	public void addElevator(Elevator elevator, int targetY, Direction direction) {
-		AbstractElevatorMoveTask task;
-		if(direction == Direction.UP) task = new ElevatorMoveUpTask(plugin, elevator, targetY, speed);
-		else task = new ElevatorMoveDownTask(plugin, elevator, targetY, speed);
+		AbstractElevatorMoveTask task = direction == Direction.UP
+				? new ElevatorMoveUpTask(plugin, moveOperator, elevator, targetY, speed)
+				: new ElevatorMoveDownTask(plugin, moveOperator, elevator, targetY, speed);
+				
 		tasks.add(task);
 	}
 	

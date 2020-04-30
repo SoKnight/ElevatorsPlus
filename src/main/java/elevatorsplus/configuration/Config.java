@@ -2,6 +2,7 @@ package elevatorsplus.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.bukkit.Material;
 
@@ -9,20 +10,19 @@ import elevatorsplus.ElevatorsPlus;
 import elevatorsplus.ui.MenuPattern;
 import lombok.Getter;
 import ru.soknight.lib.configuration.AbstractConfiguration;
-import ru.soknight.lib.logging.PluginLogger;
 
 @Getter
 public class Config extends AbstractConfiguration {
 
-	private final PluginLogger logger;
-	private final MenuPattern menuPattern;
+	private final Logger logger;
+	private MenuPattern menuPattern;
 	
-	private final List<Material> callbuttons, signs, doors;
+	private List<Material> callbuttons, signs, doors;
 	private List<String> signcontent;
 	
 	public Config(ElevatorsPlus plugin) {
 		super(plugin, "config.yml");
-		this.logger = plugin.getPluginLogger();
+		this.logger = plugin.getLogger();
 		this.menuPattern = new MenuPattern(this);
 		
 		this.callbuttons = new ArrayList<>();
@@ -32,15 +32,29 @@ public class Config extends AbstractConfiguration {
 		refreshLists();
 	}
 	
-	public void refreshLists() {
+	public void reload() {
+		super.refresh();
+		
+		this.menuPattern = new MenuPattern(this);
+		
+		refreshLists();
+	}
+	
+	private void refreshLists() {
 		this.callbuttons.clear();
 		List<String> callbuttons = getList("elements.callbuttons");
 		
 		if(callbuttons != null && !callbuttons.isEmpty())
 			callbuttons.forEach(s -> {
-				Material m = Material.valueOf(s.toUpperCase());
-				if(m != null) this.callbuttons.add(m);
-				else logger.error("Unknown callbutton material type: " + s);
+				try {
+					Material m = Material.valueOf(s.toUpperCase());
+					if(m == null) logger.severe("Unknown callbutton material type: " + s);
+					
+					this.callbuttons.add(m);
+				} catch (IllegalArgumentException e) {
+					logger.severe("Unknown callbutton material type: " + s);
+					return;
+				}
 			});
 		
 		this.signs.clear();
@@ -48,9 +62,15 @@ public class Config extends AbstractConfiguration {
 		
 		if(signs != null && !signs.isEmpty())
 			signs.forEach(s -> {
-				Material m = Material.valueOf(s.toUpperCase());
-				if(m != null) this.signs.add(m);
-				else logger.error("Unknown sign material type: " + s);
+				try {
+					Material m = Material.valueOf(s.toUpperCase());
+					if(m == null) logger.severe("Unknown sign material type: " + s);
+					
+					this.signs.add(m);
+				} catch (IllegalArgumentException e) {
+					logger.severe("Unknown sign material type: " + s);
+					return;
+				}
 			});
 		
 		this.doors.clear();
@@ -58,13 +78,18 @@ public class Config extends AbstractConfiguration {
 		
 		if(doors != null && !doors.isEmpty())
 			doors.forEach(s -> {
-				Material m = Material.valueOf(s.toUpperCase());
-				if(m != null) this.doors.add(m);
-				else logger.error("Unknown door material type: " + s);
+				try {
+					Material m = Material.valueOf(s.toUpperCase());
+					if(m == null) logger.severe("Unknown door material type: " + s);
+					
+					this.doors.add(m);
+				} catch (IllegalArgumentException e) {
+					logger.severe("Unknown door material type: " + s);
+					return;
+				}
 			});
 		
 		this.signcontent = getColoredList("elements.sign-content");
-		return;
 	}
 
 }

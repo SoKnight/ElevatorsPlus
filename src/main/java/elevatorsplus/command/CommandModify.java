@@ -12,7 +12,6 @@ import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import elevatorsplus.ElevatorsPlus;
 import elevatorsplus.command.type.ModifyOptionType;
 import elevatorsplus.command.validation.ElevatorExecutionData;
 import elevatorsplus.command.validation.ElevatorValidator;
@@ -20,10 +19,10 @@ import elevatorsplus.configuration.Config;
 import elevatorsplus.database.DatabaseManager;
 import elevatorsplus.database.Elevator;
 import elevatorsplus.database.TextLocation;
-import elevatorsplus.mechanic.ElevatorSignRefresher;
+import elevatorsplus.mechanic.tool.ElevatorSignRefresher;
+import ru.soknight.lib.argument.CommandArguments;
 import ru.soknight.lib.command.ExtendedSubcommandExecutor;
 import ru.soknight.lib.configuration.Messages;
-import ru.soknight.lib.validation.BaseExecutionData;
 import ru.soknight.lib.validation.CommandExecutionData;
 import ru.soknight.lib.validation.validator.ArgsCountValidator;
 import ru.soknight.lib.validation.validator.PermissionValidator;
@@ -31,14 +30,20 @@ import ru.soknight.lib.validation.validator.Validator;
 
 public class CommandModify extends ExtendedSubcommandExecutor {
 	
-	private final ElevatorsPlus plugin;
+	private final DatabaseManager databaseManager;
+	private final ElevatorSignRefresher signRefresher;
+	
 	private final Config config;
 	private final Messages messages;
 	
-	public CommandModify(ElevatorsPlus plugin, Config config, Messages messages) {
+	public CommandModify(DatabaseManager databaseManager, ElevatorSignRefresher signRefresher,
+			Config config, Messages messages) {
+		
 		super(messages);
 		
-		this.plugin = plugin;
+		this.databaseManager = databaseManager;
+		this.signRefresher = signRefresher;
+		
 		this.config = config;
 		this.messages = messages;
 		
@@ -47,28 +52,26 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 		String elevmsg = messages.get("error.unknown-elevator");
 		
 		Validator permval = new PermissionValidator("eplus.command.modify", permmsg);
-		Validator argsval = new ArgsCountValidator(4, argsmsg);
-		Validator elevval = new ElevatorValidator(true, elevmsg);
+		Validator argsval = new ArgsCountValidator(3, argsmsg);
+		Validator elevval = new ElevatorValidator(databaseManager, elevmsg);
 		
 		super.addValidators(permval, argsval, elevval);
 	}
 
 	@Override
-	public void executeCommand(CommandSender sender, String[] args) {
-		String name = args[1];
+	public void executeCommand(CommandSender sender, CommandArguments args) {
+		String name = args.get(0);
 		
-		DatabaseManager dbm = plugin.getDatabaseManager();
-		
-		CommandExecutionData data = new ElevatorExecutionData(sender, args, dbm, name);
+		CommandExecutionData data = new ElevatorExecutionData(sender, args, name);
 		if(!validateExecution(data)) return;
 		
-		ModifyOptionType option = ModifyOptionType.valueOf(args[2].toUpperCase());
+		ModifyOptionType option = ModifyOptionType.valueOf(args.get(1).toUpperCase());
 		if(option == null) {
 			messages.getAndSend(sender,"modify.unknown-option");
 			return;
 		}
 			
-		Elevator elevator = dbm.getElevator(name);
+		Elevator elevator = databaseManager.getElevator(name);
 		
 		String none = messages.get("modify.none");
 		
@@ -76,11 +79,11 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 		case DEFHEIGHT: {
 			int current = elevator.getDefaultLevelHeight();
 			
-			String arg = args[3];
+			String arg = args.get(2);
 			
 			int height;
 			try {
-				height = Integer.parseInt(args[3]);
+				height = Integer.parseInt(arg);
 			} catch (NumberFormatException e) {
 				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", arg);
 				return;
@@ -92,7 +95,7 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 			}
 
 			elevator.setDefaultLevelHeight(height);
-			dbm.updateElevator(elevator);
+			databaseManager.updateElevator(elevator);
 
 			String section = "modify.defheight.changed";
 			messages.sendFormatted(sender, section, "%elevator%", name, "%old%", current, "%new%", height);
@@ -101,16 +104,16 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 		case LVLHEIGHT: {
 			int count = elevator.getLevelsCount();
 
-			if(args.length < 5) {
+			if(args.size() < 4) {
 				messages.getAndSend(sender, "modify.lvlheight.wrong-syntax");
 				return;
 			}
 			
 			int level;
 			try {
-				level = Integer.parseInt(args[3]);
+				level = Integer.parseInt(args.get(2));
 			} catch (NumberFormatException e1) {
-				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args[3]);
+				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args.get(2));
 				return;
 			}
 			
@@ -121,9 +124,9 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 			
 			int height;
 			try {
-				height = Integer.parseInt(args[4]);
+				height = Integer.parseInt(args.get(3));
 			} catch (NumberFormatException e) {
-				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args[3]);
+				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args.get(3));
 				return;
 			}
 
@@ -135,7 +138,7 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 			}
 
 			elevator.setLevelHeight(level, height);
-			dbm.updateElevator(elevator);
+			databaseManager.updateElevator(elevator);
 
 			String section = "modify.lvlheight.changed";
 			messages.sendFormatted(sender, section, "%elevator%", name, "%level%", level, "%old%", current, "%new%", height);
@@ -146,9 +149,9 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 			
 			int newcount;
 			try {
-				newcount = Integer.parseInt(args[3]);
+				newcount = Integer.parseInt(args.get(2));
 			} catch (NumberFormatException e) {
-				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args[3]);
+				messages.sendFormatted(sender, "error.arg-is-not-int", "%arg%", args.get(2));
 				return;
 			}
 
@@ -158,26 +161,26 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 			}
 
 			elevator.setLevelsCount(newcount);
-			dbm.updateElevator(elevator);
+			databaseManager.updateElevator(elevator);
 			
 			String section = "modify.lvlscount.changed";
 			messages.sendFormatted(sender, section, "%elevator%", name, "%old%", count, "%new%", newcount);
 			break;
 		}
 		case NAME: {
-			String newname = args[3];
+			String newname = args.get(2);
 
 			if(newname.equals(name)) {
 				messages.sendFormatted(sender, "modify.name.already", "%elevator%", name);
 				return;
 			}
 			
-			if(dbm.getElevator(newname) != null) {
+			if(databaseManager.getElevator(newname) != null) {
 				messages.sendFormatted(sender, "modify.name.exist", "%name%", newname);
 				return;
 			}
 
-			dbm.renameElevator(elevator, newname);
+			databaseManager.renameElevator(elevator, newname);
 			
 			String section = "modify.name.changed";
 			messages.sendFormatted(sender, section, "%old%", name, "%new%", newname);
@@ -190,7 +193,7 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 				return;
 			}
 			
-			if(args.length < 6) {
+			if(args.size() < 5) {
 				messages.getAndSend(sender, "modify.sign.wrong-syntax");
 				return;
 			}
@@ -199,7 +202,7 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 			int[] values = new int[3];
 			
 			for(int i = 0; i < 3; i++) {
-				String arg = args[i + 3];
+				String arg = args.get(i + 2);
 				int value;
 				try {
 					value = Integer.parseInt(arg);
@@ -214,7 +217,7 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 			TextLocation textloc = new TextLocation(values[0], values[1], values[2]);
 			String value = textloc.getAsString();
 			
-			Elevator otherexist = dbm.getElevatorBySign(value);
+			Elevator otherexist = databaseManager.getElevatorBySign(value);
 			if(otherexist != null) {
 				messages.sendFormatted(sender, "modify.sign.linked-other", "%elevator%", otherexist.getName());
 				return;
@@ -237,9 +240,8 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 			}
 			
 			elevator.setSignLocation(value);
-			dbm.updateElevator(elevator);
+			databaseManager.updateElevator(elevator);
 			
-			ElevatorSignRefresher signRefresher = ElevatorsPlus.getInstance().getSignRefresher();
 			signRefresher.refreshInformation(elevator, block);
 
 			if(current == null) current = none;
@@ -250,7 +252,7 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 		}
 		case WORLD: {
 			String current = elevator.getWorld();
-			String newworld = args[3];
+			String newworld = args.get(2);
 			
 			if(newworld.equalsIgnoreCase("#current"))
 				if(sender instanceof Player) newworld = ((Player) sender).getWorld().getName();
@@ -271,7 +273,7 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 			}
 
 			elevator.setWorld(newworld);
-			dbm.updateElevator(elevator);
+			databaseManager.updateElevator(elevator);
 			
 			if(current == null) current = none;
 			
@@ -285,43 +287,38 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 	}
 	
 	@Override
-	public List<String> executeTabCompletion(CommandSender sender, String[] args) {
-		if(args.length == 1 || args.length > 6) return null;
-		
-		CommandExecutionData data = new BaseExecutionData(sender, args);
-		validateTabCompletion(data);
+	public List<String> executeTabCompletion(CommandSender sender, CommandArguments args) {
+		if(args.isEmpty() || args.size() > 5 || !validateTabCompletion(sender, args)) return null;
 		
 		List<String> output = new ArrayList<>();
 		
-		String name = args[1];
+		String name = args.get(0);
 		
-		DatabaseManager dbm = plugin.getDatabaseManager();
-		
-		if(args.length == 2) {
-			List<String> elevators = dbm.getAllNames();
+		if(args.size() == 1) {
+			List<String> elevators = databaseManager.getAllNames();
 		
 			elevators.stream()
 				.filter(s -> s.toLowerCase().startsWith(name.toLowerCase()))
 				.forEach(e -> output.add(e));
 		} else {
-			Elevator elevator = dbm.getElevator(name);
+			Elevator elevator = databaseManager.getElevator(name);
 			if(elevator == null) return null;
 			
-			if(args.length == 3) {
+			if(args.size() == 2) {
 				List<String> options = ModifyOptionType.getValues();
 				
 				options.stream()
-					.filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
+					.filter(s -> s.toLowerCase().startsWith(args.get(1).toLowerCase()))
 					.forEach(o -> output.add(o));
 			} else {
-				ModifyOptionType option = ModifyOptionType.valueOf(args[2].toUpperCase());
+				ModifyOptionType option = ModifyOptionType.valueOf(args.get(1).toUpperCase());
 				if(option == null) return null;
 				
 				List<String> values = new ArrayList<>();
 				
 				switch(option) {
 				case LVLHEIGHT:
-					if(args.length != 4) return null;
+					if(args.size() != 3) return null;
 					
 					int count = elevator.getLevelsCount();
 					
@@ -339,14 +336,14 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 						
 						Location location = block.getLocation();
 						
-						switch (args.length) {
-						case 4:
+						switch (args.size()) {
+						case 3:
 							output.add(String.valueOf(location.getBlockX()));
 							break;
-						case 5:
+						case 4:
 							output.add(String.valueOf(location.getBlockY()));
 							break;
-						case 6:
+						case 5:
 							output.add(String.valueOf(location.getBlockZ()));
 							break;
 						default:
@@ -355,12 +352,12 @@ public class CommandModify extends ExtendedSubcommandExecutor {
 					}
 					break;
 				case WORLD:
-					if(args.length != 4) return null;
+					if(args.size() != 3) return null;
 					
 					if(sender instanceof Player) values.add("#current");
 					Bukkit.getWorlds().forEach(w -> values.add(w.getName()));
 					
-					String arg = args[3].toLowerCase();
+					String arg = args.get(2).toLowerCase();
 					values.stream()
 						.filter(s -> s.toLowerCase().startsWith(arg))
 						.forEach(v -> output.add(v));

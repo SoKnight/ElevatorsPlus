@@ -1,4 +1,4 @@
-package elevatorsplus.mechanic;
+package elevatorsplus.mechanic.tool;
 
 import java.util.List;
 
