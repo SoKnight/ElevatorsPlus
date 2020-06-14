@@ -1,0 +1,38 @@
+name: ${project.name}
+main: elevatorsplus.ElevatorsPlus
+author: SoKnight
+version: ${project.version}
+depend: [SKLibrary]
+api-version: 1.13
+commands:
+  eplus:
+    aliases: [ep, elevatorsplus]
+    description: Main plugin command
+    usage: /eplus help
+permissions:
+  eplus.command.help:
+    default: op
+  eplus.command.create:
+    default: op
+  eplus.command.delete:
+    default: op
+  eplus.command.modify:
+    default: op
+  eplus.command.info:
+    default: op
+  eplus.command.list:
+    default: op
+  eplus.command.reload:
+    default: op
+  eplus.command.done:
+    default: op
+  eplus.command.selection:
+    default: op
+  eplus.command.elements:
+    default: op
+  eplus.command.gravityfix:
+    default: op
+  eplus.elements.destroy:
+    default: op
+  eplus.use:
+    default: true
