@@ -18,6 +18,7 @@ import org.bukkit.util.Vector;
 import elevatorsplus.ElevatorsPlus;
 import elevatorsplus.database.Elevator;
 import elevatorsplus.database.TextLocation;
+import elevatorsplus.mechanic.sound.AmbientSoundPlayer;
 import elevatorsplus.mechanic.unit.CallingSource;
 import elevatorsplus.mechanic.unit.PlatformBlock;
 import lombok.Getter;
@@ -33,7 +34,7 @@ public class ElevatorLauncher {
 	private final Messages messages;
 	
 	private final int destinationLevel;
-	private final HumanEntity caller;
+	private final CallingSource source;
 	private Elevator elevator;
 	
 	private int length;
@@ -52,7 +53,7 @@ public class ElevatorLauncher {
 		this.stopVector = new Vector(0, 0, 0);
 		
 		this.destinationLevel = source.getTarget();
-		this.caller = source.getCaller();
+		this.source = source;
 		
 		this.elevator = elevator;
 		this.signData = signData;
@@ -73,17 +74,21 @@ public class ElevatorLauncher {
 		passengers.forEach(e -> {
 			e.setGravity(false);
 			e.setMetadata("eplus_passenger_" + name, value);
-			if(e instanceof Player)
-				messages.sendFormatted(caller, "moving.move.started", "%level%", destinationLevel);
+			if(e instanceof Player) {
+				Player p = (Player) e;
+				p.setAllowFlight(true);
+				messages.sendFormatted(p, "moving.move.started", "%level%", destinationLevel);
+			}
 		});
 		
+		HumanEntity caller = source.getCaller();
 		if(!passengers.contains(caller))
 			messages.sendFormatted(caller, "moving.call.started", "%level%", destinationLevel);
 		
 		return;
 	}
 	
-	public void stop(Elevator elevator) {
+	public void stop(Elevator elevator, AmbientSoundPlayer soundPlayer) {
 		this.elevator = elevator;
 		
 		String name = elevator.getName();
@@ -124,12 +129,20 @@ public class ElevatorLauncher {
 				p.setGravity(true);
 			
 				p.removeMetadata("eplus_platform_" + name, plugin);
-				if(p instanceof Player)
-					messages.sendFormatted(caller, "moving.move.finished", "%level%", destinationLevel);
+				if(p instanceof Player) {
+					Player player = (Player) p;
+					player.setAllowFlight(false);
+					
+					messages.sendFormatted(player, "moving.move.finished", "%level%", destinationLevel);
+					soundPlayer.onFinish(player);
+				}
 			});
 		
-		if(!passengers.contains(caller))
+		HumanEntity caller = source.getCaller();
+		if(!passengers.contains(caller)) {
 			messages.sendFormatted(caller, "moving.call.finished", "%level%", destinationLevel);
+			soundPlayer.onFinish(caller);
+		}
 		
 		elevator.setPassengers(null);
 		elevator.setPlatformBlocks(null);

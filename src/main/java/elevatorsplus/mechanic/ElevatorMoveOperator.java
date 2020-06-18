@@ -16,6 +16,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.PluginManager;
@@ -27,7 +28,6 @@ import elevatorsplus.database.Elevator;
 import elevatorsplus.database.TextLocation;
 import elevatorsplus.event.ElevatorFinishedMovingEvent;
 import elevatorsplus.event.ElevatorStartedMovingEvent;
-import elevatorsplus.event.ElevatorStartingMovingEvent;
 import elevatorsplus.mechanic.sound.AmbientSoundPlayer;
 import elevatorsplus.mechanic.tool.ElevatorDoorsController;
 import elevatorsplus.mechanic.tool.ElevatorSignRefresher;
@@ -113,17 +113,6 @@ public class ElevatorMoveOperator {
 			return;
 		}
 		
-		// Calling cancellable elevator moving starting event
-		ElevatorStartingMovingEvent starting = new ElevatorStartingMovingEvent(elevator, source, passengers, data);
-		pluginManager.callEvent(starting);
-		
-		if(starting.isCancelled()) return;
-		
-		elevator = starting.getElevator();
-		source = starting.getSource();
-		passengers = starting.getPassengers();
-		data = starting.getSignData();
-		
 		this.doorsController.closeDoors(elevator, elevator.getCurrentLevel());
 		
 		List<PlatformBlock> platformBlocks = spawnFallingBlocks(elevator);
@@ -144,7 +133,13 @@ public class ElevatorMoveOperator {
 		
 		tasksExecutor.addElevator(elevator, targetY, direction);
 		
-		this.soundPlayer.onStart(source.getCaller());
+		passengers.parallelStream()
+				.filter(e -> e instanceof Player)
+				.map(e -> ((Player) e))
+				.forEach(p -> soundPlayer.onStart(p));
+		
+		if(!passengers.contains(caller))
+			soundPlayer.onStart(caller);
 		
 		// Calling elevator moving started event
 		ElevatorStartedMovingEvent started = new ElevatorStartedMovingEvent(elevator, launcher, direction);
@@ -156,7 +151,7 @@ public class ElevatorMoveOperator {
 		if(!sessions.containsKey(name)) return;
 		
 		ElevatorLauncher launcher = sessions.get(name);
-		launcher.stop(elevator);
+		launcher.stop(elevator, soundPlayer);
 		
 		BlockData data = launcher.getSignData();
 		String signloc = elevator.getSignLocation();
@@ -168,13 +163,18 @@ public class ElevatorMoveOperator {
 			this.signRefresher.createSign(elevator, data, y);
 		}
 		
-		this.soundPlayer.onFinish(launcher.getCaller());
 		this.doorsController.openDoors(elevator, elevator.getCurrentLevel());
 		
-		sessions.remove(name);
-		elevator.setWorking(false);
+		int cooldown = config.getInt("elevator-cooldown", 0);
+		cooldown = cooldown > 0 ?  cooldown * 20 : 10;
 		
-		databaseManager.updateElevator(elevator);
+		plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+			sessions.remove(name);
+			
+			elevator.setWorking(false);
+			databaseManager.updateElevator(elevator);
+		}, cooldown);
+		
 		menuBuilder.updateGui(elevator);
 		
 		// Calling elevator moving finished event

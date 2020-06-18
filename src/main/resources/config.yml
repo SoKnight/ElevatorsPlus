@@ -80,6 +80,12 @@ moving-task-frequency: 4
 # they is interdependent; if task won't keep up, this is your fault :/
 moving-speed: 0.2
 
+# Cooldown after the movement finished (in seconds)
+# During this time elevator has status 'working' and isn't able to use
+# Increase this value if you has a harmful callbutton clickers on your server
+# ! If you want disable it, change the value to 0
+elevator-cooldown: 1
+
 # Configuration of elevator elements
 # Note: Empty list should be marked with [] value (ex.: callbuttons: [])
 elements: 

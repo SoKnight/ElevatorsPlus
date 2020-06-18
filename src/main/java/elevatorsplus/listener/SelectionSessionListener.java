@@ -42,6 +42,7 @@ public class SelectionSessionListener implements Listener {
 		
 		Action action = event.getAction();
 		if(!action.equals(Action.LEFT_CLICK_BLOCK) && !action.equals(Action.RIGHT_CLICK_BLOCK)) return;
+		
 		EquipmentSlot hand = event.getHand();
 		if(!hand.equals(EquipmentSlot.HAND)) return;
 		

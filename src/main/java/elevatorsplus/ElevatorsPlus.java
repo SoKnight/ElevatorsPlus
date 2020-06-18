@@ -33,7 +33,7 @@ public class ElevatorsPlus extends JavaPlugin {
 	protected DatabaseManager databaseManager;
 	protected SessionManager sessionManager;
 	
-	protected Config mainConfig;
+	protected Config config;
 	protected Messages messages;
 	protected MessagesProvider messagesProvider;
 	
@@ -46,7 +46,7 @@ public class ElevatorsPlus extends JavaPlugin {
 		
 		// Database initialization
 		try {
-			Database database = new Database(this, mainConfig);
+			Database database = new Database(this, config);
 			this.databaseManager = new DatabaseManager(this, database);
 		} catch (Exception e) {
 			getLogger().severe("Failed to initialize database: " + e.getLocalizedMessage());
@@ -72,9 +72,9 @@ public class ElevatorsPlus extends JavaPlugin {
 	}
 	
 	private void refreshConfigs() {
-		this.mainConfig = new Config(this);
+		this.config = new Config(this);
 		
-		this.messagesProvider = new MessagesProvider(this, mainConfig);
+		this.messagesProvider = new MessagesProvider(this, config);
 		this.messages = messagesProvider.getMessages();
 	}
 	
@@ -82,7 +82,7 @@ public class ElevatorsPlus extends JavaPlugin {
 		SubcommandHandler handler = new SubcommandHandler(
 				this,
 				databaseManager,
-				mainConfig,
+				config,
 				sessionManager,
 				signRefresher,
 				messages);
@@ -95,14 +95,14 @@ public class ElevatorsPlus extends JavaPlugin {
 	
 	private void registerListeners() {
 		SelectionSessionListener selectionSessionListener = new SelectionSessionListener(
-				mainConfig,
+				config,
 				messages,
 				sessionManager,
 				databaseManager,
 				soundPlayer);
 		
 		ElementsClickListener elementsClickListener = new ElementsClickListener(
-				mainConfig,
+				config,
 				messages,
 				databaseManager,
 				sessionManager,
@@ -117,22 +117,22 @@ public class ElevatorsPlus extends JavaPlugin {
 		manager.registerEvents(new LinkingSessionListener(messages, sessionManager, databaseManager), this);
 		manager.registerEvents(new MenuListener(messages, sessionManager, moveOperator), this);
 		
-		if(!mainConfig.getBoolean("allow-elements-destroy"))
-			manager.registerEvents(new ElementsDestroyingListener(mainConfig, messages, databaseManager), this);
+		if(!config.getBoolean("allow-elements-destroy"))
+			manager.registerEvents(new ElementsDestroyingListener(config, messages, databaseManager), this);
 	}
 	
 	private void initializeProviders() {
 		this.sessionManager = new SessionManager();
-		this.soundPlayer = new AmbientSoundPlayer(this, mainConfig);
+		this.soundPlayer = new AmbientSoundPlayer(this, config);
 		
-		this.signRefresher = new ElevatorSignRefresher(mainConfig, messages);
-		this.menuBuilder = new MenuBuilder(mainConfig, messages);
+		this.signRefresher = new ElevatorSignRefresher(config, messages);
+		this.menuBuilder = new MenuBuilder(config, messages);
 	}
 	
 	private void launchMovingTask() {
 		this.moveOperator = new ElevatorMoveOperator(
 				this,
-				mainConfig,
+				config,
 				messages,
 				databaseManager,
 				menuBuilder,
@@ -141,8 +141,8 @@ public class ElevatorsPlus extends JavaPlugin {
 	}
 	
 	public void refresh() {
-		mainConfig.refresh();
-		messagesProvider.update(mainConfig);
+		config.reload();
+		messagesProvider.update(config);
 		
 		moveOperator.update();
 		

@@ -4,4 +4,8 @@ public enum CallingSourceType {
 
 	SELF, CALL;
 	
+	public boolean isCalled() {
+		return this == CALL;
+	}
+	
 }
